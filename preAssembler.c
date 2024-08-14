@@ -11,7 +11,8 @@ int isNameRestricted(const char *name)
 { // hh
     char *restrictedNames[] = {"mov", "cmp", "add", "sub", "lea", "clr", "not", "inc", "dec", "jmp", "bne", "red", "prn", "jsr", "rts", "stop"};
     int restrictedNamesCount = 16;
-    for (int i = 0; i < restrictedNamesCount; i++)
+    int i;
+    for (i = 0; i < restrictedNamesCount; i++)
     {
         if (strcmp(name, restrictedNames[i]) == 0)
         {
@@ -31,8 +32,10 @@ void addMacro(const char *name, const char *content)
         fprintf(stderr, "Error: Memory allocation failed.\n");
         exit(EXIT_FAILURE);
     }
-    macros[macroCount - 1].name = strdup(name);
-    macros[macroCount - 1].content = strdup(content);
+   /* macros[macroCount - 1].name = strdup(name);*/
+    strcpy(macros[macroCount - 1].name,name);
+    /*macros[macroCount - 1].content = strdup(content);*/
+    strcpy(macros[macroCount - 1].content,content);
     if (macros[macroCount - 1].name == NULL || macros[macroCount - 1].content == NULL)
     {
         fprintf(stderr, "Error: Memory allocation failed.\n");
