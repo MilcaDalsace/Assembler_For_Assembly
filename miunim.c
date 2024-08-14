@@ -1,89 +1,120 @@
 #include <stdio.h>
-#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
 
-// פונקציה להמיר ערך לשיטת המשלים ל-2 עם רוחב של 12 סיביות
-uint16_t toTwoComplement(int16_t value) {
-    if (value < 0) {
-        return (uint16_t)(0xFFF & (uint16_t)value); // לוקח את 12 הסיביות האחרונות
-    } else {
-        return (uint16_t)value;
+#define MAX_OPERANDS 2
+
+typedef struct {
+    char opcode[4];
+    char operand1[20];
+    int addressingMode1;
+    char operand2[20];
+    int addressingMode2;
+} Instruction;
+
+// Function to determine the addressing mode of an operand
+int getAddressingMode(char *operand) {
+    if (operand[0] == '#') {
+        return 1;  // Immediate addressing
+    } else if (operand[0] == '*' && (operand[1] == 'r' && isdigit(operand[2]) && operand[3] == '\0' && operand[2] >= '1' && operand[2] <= '8')) {
+        return 3;  // Relative addressing (indirect register)
+    } else if (operand[0] == 'r' && isdigit(operand[1]) && operand[2] == '\0' && operand[1] >= '1' && operand[1] <= '8') {
+        return 4;  // Direct addressing (register)
     }
+    return 2;  // Direct addressing (label or memory address)
 }
 
-// פונקציה לכתיבת הוראת אסמבלי עם מיעון מיידי
-void assembleImmediate(uint16_t immediateValue, uint8_t registerNumber) {
-    const uint8_t opcode = 0;  // נניח שהopcode של mov הוא 0
-    const uint8_t srcMode = 0; // Immediate addressing mode
-    const uint8_t destMode = 3; // Register addressing mode (עבור אוגר)
+// Function to validate the instruction and determine the addressing modes
+int validateInstruction(char *line, Instruction *instr) {
+    char *opcodes_with_two_operands[] = {"mov", "cmp", "add", "sub", "lea"};
+    char *opcodes_with_one_operand[] = {"not", "clr", "inc", "dec", "jmp", "bne", "red", "prn", "jsr"};
+    char *opcodes_with_no_operands[] = {"rts", "stop"};
 
-    // המרת הערך לשיטת המשלים ל-2
-    uint16_t immediateBinary = toTwoComplement(immediateValue);
+    // Tokenize the input line
+    char *token = strtok(line, " ,");
+    if (token == NULL) return 0;
 
-    // קידוד המילה הראשונה
-    uint16_t word1 = (opcode << 11) | (srcMode << 7) | (destMode << 3) | 0x4; // A=1, E=R=0
-    printf("First Word: 0x%04X\n", word1);
+    // Copy the opcode
+    strcpy(instr->opcode, token);
 
-    // הדפסת הערך הבינארי של האופרנד
-    printf("Second Word: 0x%03X\n", immediateBinary);
-}
+    // Check if the opcode is in the list of known opcodes
+    int found = 0;
+    for (int i = 0; i < sizeof(opcodes_with_two_operands) / sizeof(opcodes_with_two_operands[0]); i++) {
+        if (strcmp(instr->opcode, opcodes_with_two_operands[i]) == 0) {
+            found = 1;
+            break;
+        }
+    }
 
-// פונקציה לכתיבת הוראת אסמבלי עם מיעון ישיר
-void assembleDirect(uint16_t address, uint8_t isExternal) {
-    const uint8_t opcode = 1; // נניח שהopcode של `dec` הוא 1
-    const uint8_t srcMode = 1; // Direct addressing mode
-    const uint8_t destMode = 0; // No destination mode (בהנחה שאין יעד)
+    if (!found) {
+        for (int i = 0; i < sizeof(opcodes_with_one_operand) / sizeof(opcodes_with_one_operand[0]); i++) {
+            if (strcmp(instr->opcode, opcodes_with_one_operand[i]) == 0) {
+                found = 1;
+                break;
+            }
+        }
+    }
 
-    // קידוד המילה הראשונה
-    uint16_t word1 = (opcode << 11) | (srcMode << 7) | (destMode << 3) | 0x4; // A=1, E=R=0
-    printf("First Word: 0x%04X\n", word1);
+    if (!found) {
+        for (int i = 0; i < sizeof(opcodes_with_no_operands) / sizeof(opcodes_with_no_operands[0]); i++) {
+            if (strcmp(instr->opcode, opcodes_with_no_operands[i]) == 0) {
+                found = 1;
+                break;
+            }
+        }
+    }
 
-    // אם הכתובת חיצונית, קודד את E ל-1
-    uint16_t word2 = (isExternal ? 0x8000 : 0x0000) | (address & 0x0FFF); // כתובת 12 סיביות
-    printf("Second Word: 0x%04X\n", word2);
-}
+    if (!found) return 0;
 
-// פונקציה לכתיבת הוראת אסמבלי עם מיעון אוגר עקיף
-void assembleIndirect(uint8_t regNumber) {
-    const uint8_t opcode = 2; // נניח שהopcode של `inc` הוא 2
-    const uint8_t srcMode = 2; // Indirect addressing mode
-    const uint8_t destMode = 0; // No destination mode
+    // Parse operands based on opcode
+    if (instr->opcode[0] != '\0') {
+        if (strcmp(instr->opcode, "rts") == 0 || strcmp(instr->opcode, "stop") == 0) {
+            return 1; // No operands expected
+        }
 
-    // קידוד המילה הראשונה
-    uint16_t word1 = (opcode << 11) | (srcMode << 7) | (destMode << 3) | 0x4; // A=1, E=R=0
-    printf("First Word: 0x%04X\n", word1);
+        token = strtok(NULL, " ,");
+        if (token != NULL) {
+            strcpy(instr->operand1, token);
+            instr->addressingMode1 = getAddressingMode(instr->operand1);
+        } else if (strcmp(instr->opcode, "rts") != 0 && strcmp(instr->opcode, "stop") != 0) {
+            return 0; // Missing operands
+        }
 
-    // קידוד האוגר
-    uint16_t word2 = (regNumber << 6) & 0x003F; // קודד את מספר האוגר
-    printf("Second Word: 0x%04X\n", word2);
-}
+        token = strtok(NULL, " ,");
+        if (token != NULL) {
+            if (instr->operand1[0] == '\0') return 0; // Invalid operand
+            strcpy(instr->operand2, token);
+            instr->addressingMode2 = getAddressingMode(instr->operand2);
+        }
 
-// פונקציה לכתיבת הוראת אסמבלי עם מיעון אוגר ישיר
-void assembleRegisterDirect(uint8_t regNumber) {
-    const uint8_t opcode = 3; // נניח שהopcode של `clr` הוא 3
-    const uint8_t srcMode = 0; // Register addressing mode
-    const uint8_t destMode = 0; // Register addressing mode
+        token = strtok(NULL, " ,");
+        if (token != NULL) {
+            return 0; // Too many operands
+        }
+    }
 
-    // קידוד המילה הראשונה
-    uint16_t word1 = (opcode << 11) | (srcMode << 7) | (destMode << 3) | 0x4; // A=1, E=R=0
-    printf("First Word: 0x%04X\n", word1);
-
-    // קידוד האוגר
-    uint16_t word2 = (regNumber << 6) & 0x003F; // קודד את מספר האוגר
-    printf("Second Word: 0x%04X\n", word2);
+    return 1; // Instruction is valid
 }
 
 int main() {
-    uint8_t regNumber = 1; // לדוגמה אוגר 1
-    uint16_t address = 22; // לדוגמה
-    uint8_t isExternal = 0; // פנימית
-    int16_t immediateValue = -1; // לדוגמה
-    uint8_t registerNumber = 2;  // אוגר 2
+    char line[100];
+    Instruction instr = {"", "", 0, "", 0};
 
-    assembleImmediate(immediateValue, registerNumber);
-    assembleDirect(address, isExternal);
-    assembleIndirect(regNumber);
-    assembleRegisterDirect(regNumber);
+    printf("Enter an instruction: ");
+    fgets(line, sizeof(line), stdin);
+
+    // Remove trailing newline character
+    line[strcspn(line, "\n")] = 0;
+
+    if (validateInstruction(line, &instr)) {
+        printf("Valid instruction\n");
+        printf("Opcode: %s\n", instr.opcode);
+        if (instr.operand1[0] != '\0') printf("Operand 1: %s, Addressing Mode: %d\n", instr.operand1, instr.addressingMode1);
+        if (instr.operand2[0] != '\0') printf("Operand 2: %s, Addressing Mode: %d\n", instr.operand2, instr.addressingMode2);
+    } else {
+        printf("Invalid instruction\n");
+    }
 
     return 0;
 }
-

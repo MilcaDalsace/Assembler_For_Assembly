@@ -1,100 +1,192 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "preAssembler.h"
 
-#define MAX_LINE_LENGTH 100
-#define MAX_MACRO_NAME 50
-#define MAX_MACRO_CONTENT 500
-#define MAX_MACROS 100
-
-typedef struct {
-    char name[MAX_MACRO_NAME];
-    char content[MAX_MACRO_CONTENT];
-} Macro;
-
-Macro macros[MAX_MACROS];
+Macro *macros = NULL;
 int macroCount = 0;
 
-void addMacro(const char *name, const char *content) {
-    if (macroCount < MAX_MACROS) {
-        strcpy(macros[macroCount].name, name);
-        strcpy(macros[macroCount].content, content);
-        macroCount++;
-    } else {
-        fprintf(stderr, "Error: Maximum number of macros reached.\n");
+// is name restricted
+int isNameRestricted(const char *name)
+{ // hh
+    char *restrictedNames[] = {"mov", "cmp", "add", "sub", "lea", "clr", "not", "inc", "dec", "jmp", "bne", "red", "prn", "jsr", "rts", "stop"};
+    int restrictedNamesCount = 16;
+    for (int i = 0; i < restrictedNamesCount; i++)
+    {
+        if (strcmp(name, restrictedNames[i]) == 0)
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+// יצירת מקרו חדש והוספתו לרשימת המקרוים
+void addMacro(const char *name, const char *content)
+{
+    macroCount++;
+    macros = realloc(macros, macroCount * sizeof(Macro));
+    if (macros == NULL)
+    { /*כבר נבדק?*/
+        fprintf(stderr, "Error: Memory allocation failed.\n");
+        exit(EXIT_FAILURE);
+    }
+    macros[macroCount - 1].name = strdup(name);
+    macros[macroCount - 1].content = strdup(content);
+    if (macros[macroCount - 1].name == NULL || macros[macroCount - 1].content == NULL)
+    {
+        fprintf(stderr, "Error: Memory allocation failed.\n");
+        exit(EXIT_FAILURE);
     }
 }
 
-const char* findMacro(const char *name) {
-    for (int i = 0; i < macroCount; i++) {
-        if (strcmp(macros[i].name, name) == 0) {
+const char *findMacro(const char *name)
+{
+    for (int i = 0; i < macroCount; i++)
+    {
+        if (strcmp(macros[i].name, name) == 0)
+        {
             return macros[i].content;
         }
     }
     return NULL;
 }
 
-void processFile(const char *inputFilename) {
+int checkingWhetherTheFileIsCorrect(FILE *checkedFile)
+{
+    if (!checkedFile)
+    {
+        perror("Error opening the file");
+        fclose(checkedFile);
+        return 0;
+    }
+    return 1;
+}
+
+void removeFileAndExit(const char *outputFilename)
+{
+    if (remove(outputFilename) == 0)
+    {
+        exit(EXIT_FAILURE);
+    }
+}
+
+void processFile(const char *inputFilename)
+{
     char outputFilename[FILENAME_MAX];
     strcpy(outputFilename, inputFilename);
     strcat(outputFilename, ".am");
-
+    
     FILE *inputFile = fopen(inputFilename, "r");
-    if (!inputFile) {
-        perror("Error opening input file");
+    if (!checkingWhetherTheFileIsCorrect(inputFile))
         return;
-    }
 
     FILE *outputFile = fopen(outputFilename, "w");
-    if (!outputFile) {
-        perror("Error opening output file");
-        fclose(inputFile);
+    if (!checkingWhetherTheFileIsCorrect(outputFile))
         return;
-    }
 
     char line[MAX_LINE_LENGTH];
+    char linetocheck[MAX_LINE_LENGTH];
     char macroName[MAX_MACRO_NAME];
-    char macroContent[MAX_MACRO_CONTENT];
+    char *macroContent = NULL;
+    size_t macroContentSize = 0;
     int insideMacro = 0;
+    // מעבר על שורות הקובץ
+    while (fgets(line, MAX_LINE_LENGTH, inputFile))
+    {
+        strcpy(linetocheck, line);
+        char *token = strtok(linetocheck, " \t\n");
 
-    while (fgets(line, MAX_LINE_LENGTH, inputFile)) {
-        char *token = strtok(line, " \t\n");
-
-        if (token && strcmp(token, "macro") == 0) {
+        //בדיקה האם שורת ההגדרה של המקרו תקינה
+        if (token && strcmp(token, "macr") == 0)
+        {
             token = strtok(NULL, " \t\n");
-            if (token) {
-                strcpy(macroName, token);
-                macroContent[0] = '\0';
-                insideMacro = 1;
-            } else {
-                fprintf(stderr, "Error: Macro name missing.\n");
+            if (token)
+            {
+                //  בדיקה האם שם המקרו תקין
+                if (!isNameRestricted(token))
+                {
+                    fprintf(stderr, "Error: Macro name restricted.\n");
+                    fclose(outputFile);
+                    removeFileAndExit(outputFilename);
+                }
+                else
+                {
+                    strcpy(macroName, token);
+                    token = strtok(NULL, " \t\n");
+                    // בדיקה אם אין תווים מיותרים בשורת ההגדרה
+                    if (token)
+                    {
+                        fprintf(stderr, "Error: Additional characters in the macro definition line. \n");
+                        fclose(outputFile);
+                        removeFileAndExit(outputFilename);
+                    }
+                    else
+                    {
+                        // שורת הגדרת שם מקרו תקינה
+                        free(macroContent);
+                        macroContent = NULL;
+                        macroContentSize = 0;
+                        insideMacro = 1;
+                    }
+                }
             }
-        } else if (insideMacro && token && strcmp(token, "endmacro") == 0) {
+            // קרתה הגדרת מאקרו ללא שם אחריו
+            else
+            {
+                fprintf(stderr, "Error: Macro name missing.\n");
+                fclose(outputFile);
+                removeFileAndExit(outputFilename);
+            }
+        }
+        // בדיקה האם יש כאן סיום של הגדרת מאקרו
+        else if (insideMacro && token && strcmp(token, "endmacr") == 0)
+        {
+            token = strtok(NULL, " \t\n");
+            if (token)
+            {
+                fprintf(stderr, "Error: Additional characters at the end. \n");
+                fclose(outputFile);
+                removeFileAndExit(outputFilename);
+            }
+            // בדיקה האם הוגדר מאקרו ללא תוכן
+            if (macroContent == NULL)
+            {
+                fprintf(stderr, "Error: Memory allocation failed.\n");
+                fclose(outputFile);
+                removeFileAndExit(outputFilename);
+            }
+            // הוספת מאקרו חדש
             addMacro(macroName, macroContent);
             insideMacro = 0;
-        } else if (insideMacro) {
-            strcat(macroContent, line);
-        } else {
-            const char *macroContent = findMacro(token);
-            if (macroContent) {
-                fprintf(outputFile, "%s", macroContent);
-            } else {
-                fprintf(outputFile, "%s", line);
+        }
+        // שמירת תוכן המאקרו
+        else if (insideMacro)
+        {
+            size_t lineLength = strlen(line);
+            macroContent = realloc(macroContent, macroContentSize + lineLength + 1);
+            if (macroContent == NULL)
+            {
+                fprintf(stderr, "Error: Memory allocation failed.\n");
+                fclose(outputFile);
+                removeFileAndExit(outputFilename);
             }
+            strcpy(macroContent + macroContentSize, line);
+            macroContentSize += lineLength;
+        }
+        // קריאה למאקרו והחלפתו בתוכן שלו
+        else if (findMacro(token))
+        {
+            fprintf(outputFile, "%s", macroContent);
+        }
+        //הוספת שורה רגילה לקובץ
+        else
+        {
+            fprintf(outputFile, "%s", line);
         }
     }
 
+    free(macroContent);
     fclose(inputFile);
     fclose(outputFile);
-}
-
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <source-file>\n", argv[0]);
-        return 1;
-    }
-
-    processFile(argv[1]);
-
-    return 0;
 }
