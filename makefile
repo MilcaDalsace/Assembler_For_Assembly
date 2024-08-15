@@ -1,9 +1,22 @@
-all: main.o transitions.o
-	gcc -g main.o transitions.o -o all -lm
+all: main transition functions
 
-main.o: Main.c transitions.h
-	gcc -c Main.c -o main.o
+	gcc -g main transition functions -o all -lm
 
-transition.o: transitions.c transitions.h
-	gcc -c transitions.c -o transitions -lm
+
+
+transition: transition.c transition.h function.h
+
+	gcc -c transition.c -o transition -lm
+
+	
+
+functions: function.c function.h
+
+	gcc -c function.c -o functions -lm
+
+
+main: main.c transition.h
+
+	gcc -c main.c -o main
+
 clean: rm *~
