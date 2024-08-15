@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <ctype.h>
+#include "function.h"
 #include "transition.h"
 
 // בדיקה האם שם התווית תקינה

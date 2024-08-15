@@ -5,6 +5,15 @@
 #define CODE_SIZE 4
 #define ARE_SIZE 3
 
+// Constant strings for addressing methods
+extern const char IMMEDIATE_ADDRESS[];
+extern const char DIRECT_ADDRESS[];
+extern const char INDIRECT_HOARD_ADDRESS[];
+extern const char DIRECT_HOARD_ADDRESS[];
+extern const char ABSOLUTE[];
+extern const char RELOCATABLE[];
+extern const char EXTERNAL[];
+extern const char ZERO[];
 
 typedef struct {
     char symbol[MAX_LINE_LENGTH];
@@ -30,8 +39,8 @@ extern int labelCount;
 typedef struct {
     char *name;
 }Extern;
-Extern *externs;
 
+Extern *externs;
 extern int externCount;
 
 typedef struct {
