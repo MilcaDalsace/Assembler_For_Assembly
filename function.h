@@ -1,18 +1,10 @@
 #define MAX_LINE_LENGTH 81
 #define MAX_LABEL_NAME 32
-#define CODE_SEGMENT_SIZE 15
+#define CODE_SEGMENT_SIZE 16
+#define CODE_EE_SIZE 13
 #define CODE_SIZE 4
 #define ARE_SIZE 3
 
-// Constant strings for addressing methods
-extern const char IMMEDIATE_ADDRESS[];
-extern const char DIRECT_ADDRESS[];
-extern const char INDIRECT_HOARD_ADDRESS[];
-extern const char DIRECT_HOARD_ADDRESS[];
-extern const char ABSOLUTE[];
-extern const char RELOCATABLE[];
-extern const char EXTERNAL[];
-extern const char ZERO[];
 
 typedef struct {
     char symbol[MAX_LINE_LENGTH];
@@ -98,20 +90,11 @@ int isNameRestricted(const char *token);
 //find operation
 int findOperation(const char *token);
 
-//binary char to int
-int binaryCharToInt(char c);
-
 //binary to decimal
 int binaryToDecimal(const char *binary);
 
 //decimal to binary
 char* decimalToBinary(int n, int numOfChar);
-
-//deecimmal to octal
-void decimalToOctal(int decimal, char *octal);
-
-//binary to octal
-void binaryToOctal(const char *binary, char *octal);
 
 //check if the datas write correct
 int correctCommas(char *line);
