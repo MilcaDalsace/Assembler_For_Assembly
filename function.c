@@ -16,6 +16,7 @@ const char EXTERNAL[] = "001";
 const char ZERO[] = "0000";
 
 Symbol *symbols = NULL;
+int a;
 int symbolCount = 0;
 
 SymbolTable *symbolTable = NULL;
