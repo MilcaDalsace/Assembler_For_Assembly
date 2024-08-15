@@ -5,7 +5,7 @@
 #include <math.h>
 #include <ctype.h>
 #include "function.h"
-#include "transitions.h"
+#include "transition.h"
 
 // First pass
 void firstPass(const char *sourceFilename) {

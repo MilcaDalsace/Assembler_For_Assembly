@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "function.h"
-#include "transitions.h"
+#include "transition.h"
 
 int numFileIsCorect(int argc, char *argv[])
 {
