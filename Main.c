@@ -1,10 +1,9 @@
-/*בדיקה האם מספר הקבצים שהגיעו תקין*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "preAssembler.h"
+#include "transitions.h"
 
-int numFileIsCoorect(int argc, char *argv[])
+int numFileIsCorect(int argc, char *argv[])
 {
     int count = 1;
     while (argv[count] != NULL)
@@ -22,20 +21,37 @@ int numFileIsCoorect(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-    if (numFileIsCoorect(argc, argv))
+    if (!numFileIsCorect(argc, argv))
     {
-        int i;
-        for (i = 1; i < argc; i++)
-        {
-            processFile(argv[i]);
-        }
+        return 0;
     }
+
     int i;
-    for (i = 0; i < macroCount; i++)
+    for (i = 1; i < argc; i++)
     {
-        free(macros[i].name);
-        free(macros[i].content);
+        // FILE *sourceFile = fopen(argv[i], "r");
+        // First pass
+        firstPass(argv[i]);
+
+        // Second pass
+        secondPass(argv[i]);
+
+        // Build output files
+        buildOutputFiles(argv[i]);
     }
-    free(macros);
+
+    // Free allocated memory
+    for (i = 0; i < symbolCount; i++)
+    {
+        free(symbolTable[i].name);
+    }
+    free(symbolTable);
+    for (i = 0; i < externCount; i++)
+    {
+        free(externs[i].name);
+    }
+    free(externs);
+    free(symbols);
+
     return 0;
 }
