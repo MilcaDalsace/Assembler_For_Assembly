@@ -14,6 +14,8 @@ extern const char ABSOLUTE[];
 extern const char RELOCATABLE[];
 extern const char EXTERNAL[];
 extern const char ZERO[];
+extern const char NOT_FOUND[];
+extern const int registers[];
 
 typedef struct {
     char symbol[MAX_LINE_LENGTH];
@@ -58,7 +60,7 @@ int isNumber(const char *str);
 int isNameRestricted(const char *name);
 
 //check if it register
-int isRegister(const char *name);
+int isRegister( const char *name);
 
 //find method addressing
 char* findsMethodOfAddressing(const char *operand);
@@ -91,7 +93,7 @@ char* labelDefinition(const char *token);
 int findLabbel(const char *token);
 
 //find extern
-Extern* findExtern(const char *token);
+char* findExtern(const char *externName);
 
 //is restricted name
 int isNameRestricted(const char *token);

@@ -2,15 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include "preAssembler.h"
-#include "function.h"
 
 Macro *macros = NULL;
 int macroCount = 0;
 
 // is name restricted
-/*
 int isNameRestricted(const char *name)
-{ 
+{ // hh
     char *restrictedNames[] = {"mov", "cmp", "add", "sub", "lea", "clr", "not", "inc", "dec", "jmp", "bne", "red", "prn", "jsr", "rts", "stop"};
     int restrictedNamesCount = 16;
     int i;
@@ -22,7 +20,7 @@ int isNameRestricted(const char *name)
         }
     }
     return 1;
-}*/
+}
 
 // יצירת מקרו חדש והוספתו לרשימת המקרוים
 void addMacro(const char *name, const char *content)
@@ -68,16 +66,15 @@ int checkingWhetherTheFileIsCorrect(FILE *checkedFile)
     return 1;
 }
 
-int removeFileAndExit(const char *outputFilename)
+void removeFileAndExit(const char *outputFilename)
 {
     if (remove(outputFilename) == 0)
     {
-        return 1;
+        exit(EXIT_FAILURE);
     }
-    return 0;
 }
 
-int processFile(const char *inputFilename)
+void processFile(const char *inputFilename)
 {
     char outputFilename[FILENAME_MAX];
     strcpy(outputFilename, inputFilename);
@@ -85,11 +82,11 @@ int processFile(const char *inputFilename)
     
     FILE *inputFile = fopen(inputFilename, "r");
     if (!checkingWhetherTheFileIsCorrect(inputFile))
-        return 0;
+        return;
 
     FILE *outputFile = fopen(outputFilename, "w");
     if (!checkingWhetherTheFileIsCorrect(outputFile))
-        return 0;
+        return;
 
     char line[MAX_LINE_LENGTH];
     char linetocheck[MAX_LINE_LENGTH];
@@ -110,11 +107,11 @@ int processFile(const char *inputFilename)
             if (token)
             {
                 //  בדיקה האם שם המקרו תקין
-                if (findOperation(token)+1)
+                if (!isNameRestricted(token))
                 {
                     fprintf(stderr, "Error: Macro name restricted.\n");
                     fclose(outputFile);
-                    return (!removeFileAndExit(outputFilename));
+                    removeFileAndExit(outputFilename);
                 }
                 else
                 {
@@ -125,7 +122,7 @@ int processFile(const char *inputFilename)
                     {
                         fprintf(stderr, "Error: Additional characters in the macro definition line. \n");
                         fclose(outputFile);
-                        return (!removeFileAndExit(outputFilename));
+                        removeFileAndExit(outputFilename);
                     }
                     else
                     {
@@ -142,7 +139,7 @@ int processFile(const char *inputFilename)
             {
                 fprintf(stderr, "Error: Macro name missing.\n");
                 fclose(outputFile);
-                return (!removeFileAndExit(outputFilename));
+                removeFileAndExit(outputFilename);
             }
         }
         // בדיקה האם יש כאן סיום של הגדרת מאקרו
@@ -153,14 +150,14 @@ int processFile(const char *inputFilename)
             {
                 fprintf(stderr, "Error: Additional characters at the end. \n");
                 fclose(outputFile);
-                return (!removeFileAndExit(outputFilename));
+                removeFileAndExit(outputFilename);
             }
             // בדיקה האם הוגדר מאקרו ללא תוכן
             if (macroContent == NULL)
             {
                 fprintf(stderr, "Error: Memory allocation failed.\n");
                 fclose(outputFile);
-                return (!removeFileAndExit(outputFilename));
+                removeFileAndExit(outputFilename);
             }
             // הוספת מאקרו חדש
             addMacro(macroName, macroContent);
@@ -175,7 +172,7 @@ int processFile(const char *inputFilename)
             {
                 fprintf(stderr, "Error: Memory allocation failed.\n");
                 fclose(outputFile);
-                return (!removeFileAndExit(outputFilename));
+                removeFileAndExit(outputFilename);
             }
             strcpy(macroContent + macroContentSize, line);
             macroContentSize += lineLength;
@@ -195,5 +192,4 @@ int processFile(const char *inputFilename)
     free(macroContent);
     fclose(inputFile);
     fclose(outputFile);
-    return 1;
 }
