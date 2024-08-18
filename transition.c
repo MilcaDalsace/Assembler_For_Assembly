@@ -60,7 +60,7 @@ void firstPass(const char *sourceFilename)
             { // Label definition
                 // בידקה האם שם התווית תקין
                 if (labbelNameIsCorrect(newSymbolName, &uncorrect, &countLine))
-                {         
+                {
                     // A new correct label
                     token = strtok(NULL, " \t\n");                                               // Next field
                     fprintf(stderr, "line: %d %s naw symbol name.\n", countLine, newSymbolName); // check
@@ -69,43 +69,45 @@ void firstPass(const char *sourceFilename)
             if (token)
             {
                 // Data
-                //בדיקה האם זאת פקודת דאטה
+                // בדיקה האם זאת פקודת דאטה
                 if (strcmp(token, ".data") == 0)
                 {
-                    char *remaining = strtok(NULL, ""); // Get the rest of the lin
-                    //בדיקה האם השורה בנויה בצורה תקינה
+                    char *remaining = strtok(NULL, ""); // Get the rest of the line
+                    // בדיקה האם השורה בנויה בצורה תקינה
                     if (remaining != NULL && correctCommas(remaining))
                     {
-                        fprintf(stderr, " line: %d %s is data.\n", countLine, token);//check
-                        //מעבר על כל אובייקטי הדאטה ואיחסונם
+                        fprintf(stderr, " line: %d %s is data.\n", countLine, token); // check
+                        // מעבר על כל אובייקטי הדאטה ואיחסונם
                         while (token != NULL)
                         {
                             token = strtok(NULL, ", \t\n");
-                            fprintf(stderr, " line: %d %s is first num.\n", countLine, token);//check
-                            //בדיקה האם האובייקט הוא מספר
+                            fprintf(stderr, " line: %d %s is first num.\n", countLine, token); // check
+                            // בדיקה האם האובייקט הוא מספר
                             if (token && isNumber(token))
                             {
                                 int value = atoi(token);
                                 strcpy(code, decimalToBinary(value, CODE_SEGMENT_SIZE));
-                                addSymbol(newSymbolName, NULL, code, 1, 0, 0); // the first word
-                                fprintf(stderr, "line: %d %d add to symbol.\n", countLine, value);
-                                countWord++; // add 1 L
+                                addSymbol(newSymbolName, NULL, code, 1, 0, 0);                     // the first word
+                                fprintf(stderr, "line: %d %d add to symbol.\n", countLine, value); // check
+                                countWord++;                                                       // add 1 L
                             }
                             else
                             {
+                                //not a number error
                                 fprintf(stderr, "Error: line %d not a number \n", countLine);
                                 uncorrect = 1;
                             }
                         }
                     }
+                    //השורה לא בנויה נכון
                     else
                     {
                         fprintf(stderr, "line %d \n", countLine);
                         uncorrect = 1;
                     }
                     DC += countWord;
-                    // String
                 }
+                //אם זה מחרוזת
                 else if (strcmp(token, ".string") == 0)
                 {
                     token = strtok(NULL, " \t\n");

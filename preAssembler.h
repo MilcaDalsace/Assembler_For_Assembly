@@ -23,7 +23,7 @@ const char* findMacro(const char *name);
 int checkingWhetherTheFileIsCorrect(FILE * checkedFile);
 
 /*מחיקת קובץ ויציאה*/
-void removeFileAndExit(const char *outputFilename);
+int removeFileAndExit(const char *outputFilename);
 
 /*פריסת הקוד של הפרה אסמבלר ויוצרת את הקובץ החדש */
-void processFile(const char *inputFilename);
+int processFile(const char *inputFilename);

@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "preassembler.c": "cpp"
+        "preassembler.c": "cpp",
+        "preassembler.h": "c",
+        "function.h": "c"
     }
 }
