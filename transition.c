@@ -239,7 +239,7 @@ void buildOutputFiles(const char *sourceFilename)
         Symbol *sym = &symbols[i];
         int codeInDecimal = binaryToDecimal(sym->code);
         fprintf(obFile, "%04d \t %05o \n", sym->address, codeInDecimal);
-        fprintf(obFile, "%s\n", sym->code); /* check the  binary code*/
+       /* fprintf(obFile, "%s\n", sym->code); check the  binary code*/
         if (sym->isExtern)
         {
             externExist = 1;
