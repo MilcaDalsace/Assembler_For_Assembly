@@ -30,7 +30,7 @@ void firstPass(const char *sourceFilename)
         char *token = strtok(lineToCheck, " \t\n");
         if (token)
         {
-            char *newSymbolName = labelDefinition(token); // Check if it is a new label
+            newSymbolName = labelDefinition(token); // Check if it is a new label
             if ((newSymbolName))
             { // Label definition
                 if (isNameRestricted(newSymbolName))
@@ -72,22 +72,24 @@ void firstPass(const char *sourceFilename)
                     {
                         uncorrect = 1;
                     }
+                    addL(countLine, 0);
                 }
                 // Entry
                 else if (strcmp(token, ".entry") == 0)
                 {
                     char *remaining = strtok(NULL, "");
-                    if (entryDefinition(remaining, countLine) == 0)
+                    if (entryDefinition(remaining, countLine, 1) == 0)
                     {
                         uncorrect = 1;
                     }
+                    addL(countLine, 0);
                 }
                 // Operation list
                 else if (findOperation(token) + 1)
                 {
-                    int numOper=findOperation(token);
+                    int numOper = findOperation(token);
                     char *remaining = strtok(NULL, "");
-                    if (addOperation(remaining,numOper, countLine,newSymbolName) == 0)
+                    if (addOperation(remaining, numOper, countLine, newSymbolName) == 0)
                     {
                         uncorrect = 1;
                     }
@@ -134,83 +136,40 @@ void secondPass(const char *sourceFilename)
     {
         strcpy(lineToCheck, line);
         countLine++;
-
-        fprintf(stderr, "line: %d %d count adress.\n", countLine, countAdress); // check
         char *token = strtok(lineToCheck, " \t\n");
+        // label
         if (token)
         {
             newSymbolName = labelDefinition(token); // Check if it is a label
             if ((newSymbolName) != NULL)
-            {                                                                                // Label definition
-                fprintf(stderr, "line: %d %s naw symbol name.\n", countLine, newSymbolName); // check
-                token = strtok(NULL, " \t\n");                                               // Next field
+            {                                  // Label definition
+                token = strtok(NULL, " \t\n"); // Next field
             }
         }
+        // check the first operation
         if (token)
         {
+            // Check if the definition has done
             if ((strcmp(token, ";") == 0) || (strcmp(token, ".data") == 0) || (strcmp(token, ".string") == 0) || (strcmp(token, ".extern") == 0))
             {
-                fprintf(stderr, "line: %d %s was check in first pass.\n", countLine, token); // check
                 continue;
-                // Entry
             }
+            // Entry
             else if (strcmp(token, ".entry") == 0)
             {
-                fprintf(stderr, "line: %d %s in entry.\n", countLine, token); // check
-                token = strtok(NULL, " \t\n");
-                if (findLabbel(token) + 1)
+                char *remaining = strtok(NULL, "");
+                if (entryDefinition(remaining, countLine, 0) == 0)
                 {
-                    Symbol *sym = &symbols[findLabbel(token)];
-                    if (sym)
-                    { // If found a label
-                        if (sym->isEntry == 0)
-                        {                                                                                   // If not found in the first pass
-                            fprintf(stderr, "line %d:  updatind %d to entry .\n", countLine, sym->address); // check
-                            sym->isEntry = 1;
-                        }
-                    }
-                    else
-                    { // Not exist in the table of labels
-                        fprintf(stderr, "Error: line %d label not exist.\n", countLine);
-                        uncorrect = 1;
-                    }
-                }
-                else
-                {
-                    fprintf(stderr, "Error: line %d Labbel name is missing.\n", countLine);
                     uncorrect = 1;
                 }
-
-                // Operation list
             }
+            // Operation list
             else if (findOperation(token) + 1)
             {
-                token = strtok(NULL, " ,\t\n");
-                fprintf(stderr, "line: %d %s Operation.\n", countLine, token); // check
-                int i = 1;
-                while (token != NULL)
+                char* remaining = strtok(NULL, " ,\t\n");
+                if (updateOparand(remaining, countLine,countAdress) == 0)
                 {
-                    if (strcmp(symbols[countAdress + i].code, NOT_FOUND) == 0)
-                    {                                                                                // Operand not found at the first pass
-                        fprintf(stderr, "line: %d %s not found at first past.\n", countLine, token); // check
-
-                        Symbol *sym = &symbols[countAdress + i];
-                        strcpy(code, miunOperand(token, 1));
-                        fprintf(stderr, "  %s %s code of.\n", token, code); // check
-                        strncpy(sym->code, code, CODE_SEGMENT_SIZE);
-                        if (findExtern(token))
-                        {
-                            sym->isExtern = 1;
-                            strncpy(sym->externName, token, MAX_LABEL_NAME);
-                        }
-                        if (strcmp(code, NOT_FOUND) == 0)
-                        {
-                            fprintf(stderr, "Error: line %d label not found.\n", countLine);
-                            uncorrect = 1;
-                        }
-                    }
-                    i++;
-                    token = strtok(NULL, " ,\t\n");
+                    uncorrect = 1;
                 }
             }
             countAdress += l[countLine - 1].wordCounter;

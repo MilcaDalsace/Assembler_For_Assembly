@@ -40,9 +40,9 @@ extern int labelCount;
 
 typedef struct {
     char *name;
-}Extern;
+}External;
 
-Extern *externs;
+External *externs;
 extern int externCount;
 
 typedef struct {
@@ -59,9 +59,11 @@ int addString(const char *line, int countLine, const char *newSymbolName);
 
 int externDefinition(const char *line, int countLine);
 
-int entryDefinition(const char *line, int countLine);
+int entryDefinition(const char *line, int countLine, int isFirstPass);
 
 int addOperation(const char *line,int numOper, int countLine, const char *newSymbolName);
+
+int updateOparand(const char *line, int countLine, int countAdress);
 
 //check if it a num
 int isNumber(const char *str);

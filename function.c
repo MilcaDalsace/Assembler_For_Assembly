@@ -24,7 +24,7 @@ int symbolCount = 0;
 SymbolTable *symbolTable = NULL;
 int labelCount = 0;
 
-Extern *externs = NULL;
+External *externs = NULL;
 int externCount = 0;
 
 L *l = NULL;
@@ -122,10 +122,17 @@ int externDefinition(const char *line, int countLine)
         char *token = strtok(line, " \t\n");
         while (token != NULL)
         {
-            addExtern(token); // Add extern
-            token = strtok(NULL, " \t\n");
+            if (isNameRestricted(token))
+            {
+                fprintf(stderr, "Error: line %d is restricted name\n", countLine);
+                return 0;
+            }
+            else
+            {
+                addExtern(token); // Add extern
+                token = strtok(NULL, " \t\n");
+            }
         }
-        addL(countLine, 0);
         return 1;
     }
     else
@@ -135,7 +142,7 @@ int externDefinition(const char *line, int countLine)
     }
 }
 
-int entryDefinition(const char *line, int countLine)
+int entryDefinition(const char *line, int countLine, int isFirstPass)
 {
     char *token = strtok(line, " \t\n");
     if (token)
@@ -143,15 +150,19 @@ int entryDefinition(const char *line, int countLine)
         if (findLabbel(token) + 1)
         {
             Symbol *sym = &symbols[findLabbel(token)];
-            if (sym)
+            if (sym && sym->isEntry == 0)
             {
                 sym->isEntry = 1;
-                fprintf(stderr, " line: %d %s entry andicated.\n", countLine, token);
             }
+        }
+        else if (isFirstPass)
+        {
+            fprintf(stderr, " line: %d %s not yet found in labbels.\n", countLine, token);
         }
         else
         {
-            fprintf(stderr, " line: %d %s not yet found in labbels.\n", countLine, token);
+            fprintf(stderr, "Error: line %d label not exist.\n", countLine);
+            return 0;
         }
 
         token = strtok(NULL, " \t\n");
@@ -166,7 +177,6 @@ int entryDefinition(const char *line, int countLine)
         fprintf(stderr, "Error: line %d Labbel name is missing.\n", countLine);
         return 0;
     }
-    addL(countLine, 0);
     return 1;
 }
 
@@ -290,6 +300,36 @@ int addOperation(const char *line, int numOper, int countLine, const char *newSy
     }
     IC += countWord;
     addL(countLine, countWord);
+    return 1;
+}
+
+int updateOparand(const char *line, int countLine, int countAdress)
+{
+    char *token = strtok(line, " ,\t\n");
+    char code[CODE_SEGMENT_SIZE];
+    int i = 1;
+    while (token != NULL)
+    {
+        int simbolAddress = countAdress + i;
+        if (strcmp(symbols[simbolAddress].code, NOT_FOUND) == 0)
+        { // Operand not found at the first pass
+            Symbol *sym = &symbols[simbolAddress];
+            strcpy(code, miunOperand(token, 1));
+            strncpy(sym->code, code, CODE_SEGMENT_SIZE);
+            if (findExtern(token))
+            {
+                sym->isExtern = 1;
+                strncpy(sym->externName, token, MAX_LABEL_NAME);
+            }
+            if (strcmp(code, NOT_FOUND) == 0)
+            {
+                fprintf(stderr, "Error: line %d label not found.\n", countLine);
+                return 0;
+            }
+        }
+        i++;
+        token = strtok(NULL, " ,\t\n");
+    }
     return 1;
 }
 // Restricted name
@@ -539,7 +579,7 @@ void addLabbel(const char *name, const int count)
 // Add external symbol
 void addExtern(const char *name)
 {
-    Extern *temp = realloc(externs, (externCount + 1) * sizeof(Extern));
+    External *temp = realloc(externs, (externCount + 1) * sizeof(External));
     if (!temp)
     {
         fprintf(stderr, "Error: Memory allocation failed.\n");
@@ -613,31 +653,6 @@ char *findExtern(const char *externName)
     return NULL;
 }
 
-/*
-//corect string
-char *correctString(const char *str){
-removeInvisibleChars(str);
-size_t len = strlen(str);
-   if (len < 2 || str[0] != '"' || str[len - 1] != '"') {
-        return strdup(str); // מחזירים עותק של המחרוזת המקורית
-    }
-
-    // יצירת עותק של המחרוזת ללא הגרשיים
-    char *new_str = (char *)malloc(len - 1);
-    if (new_str == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
-        exit(EXIT_FAILURE);
-    }
-
-    // העתקת התוכן בין הגרשיים
-    strncpy(new_str, str + 1, len - 2);
-    new_str[len - 2] = '\0'; // הוספת תו סיום
-
-    return new_str; // החזרת המחרוזת החדשה
-}
-
-*/
-
 int isCorrectString(const char *name)
 {
     if (name[0] == '"' && name[strlen(name) - 1] == '"')
@@ -648,6 +663,7 @@ int isCorrectString(const char *name)
         return 0;
 }
 // Check if a string is a number
+
 int isNumber(const char *str)
 {
     // Check for empty string
