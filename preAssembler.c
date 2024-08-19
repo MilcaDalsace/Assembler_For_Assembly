@@ -8,7 +8,7 @@
 Macro *macros = NULL;
 int macroCount = 0;
 
-// יצירת מקרו חדש והוספתו לרשימת המקרוים
+/* יצירת מקרו חדש והוספתו לרשימת המקרוים*/
 void addMacro(const char *name, const char *content)
 {
     macroCount++;
@@ -18,7 +18,6 @@ void addMacro(const char *name, const char *content)
         fprintf(stderr, "Error: Memory allocation failed.\n");
         exit(EXIT_FAILURE);
     }
-    // I change the code- to ask Ester!
     macros[macroCount - 1].name = strdup(name);
     /*strcpy(macros[macroCount - 1].name,name);*/
     macros[macroCount - 1].content = strdup(content);
@@ -63,7 +62,7 @@ void removeFileAndExit(const char *outputFilename)
 
 void regetError(const char *errorLine, FILE *outputFile, char *outputFilename)
 {
-    fprintf(stderr,"%s", errorLine);
+    fprintf(stderr, "%s \n", errorLine);
     if (outputFile && outputFilename)
     {
         fclose(outputFile);
@@ -83,7 +82,7 @@ void processFile(const char *inputFilename)
     }
     else
     {
-        regetError("Error: file name is incorrect.",NULL,NULL);
+        regetError("Error: file name is incorrect.", NULL, NULL);
     }
     strcat(outputFilename, ".am");
 
@@ -101,19 +100,19 @@ void processFile(const char *inputFilename)
     char *macroContent = NULL;
     size_t macroContentSize = 0;
     int insideMacro = 0;
-    // מעבר על שורות הקובץ
+    /* מעבר על שורות הקובץ*/
     while (fgets(line, MAX_LINE_LENGTH, inputFile))
     {
         strcpy(linetocheck, line);
         char *token = strtok(linetocheck, " \t\n");
 
-        // בדיקה האם שורת ההגדרה של המקרו תקינה
+        /* בדיקה האם שורת ההגדרה של המקרו תקינה*/
         if (token && strcmp(token, "macr") == 0)
         {
             token = strtok(NULL, " \t\n");
             if (token)
             {
-                //  בדיקה האם שם המקרו תקין
+                /*  בדיקה האם שם המקרו תקין*/
                 if (findOperation(token) + 1)
                 {
                     regetError("Error: Macro name restricted.", outputFile, outputFilename);
@@ -122,14 +121,14 @@ void processFile(const char *inputFilename)
                 {
                     strcpy(macroName, token);
                     token = strtok(NULL, " \t\n");
-                    // בדיקה אם אין תווים מיותרים בשורת ההגדרה
+                    /* בדיקה אם אין תווים מיותרים בשורת ההגדרה*/
                     if (token)
                     {
                         regetError("Error: Additional characters in the macro definition line.", outputFile, outputFilename);
                     }
                     else
                     {
-                        // שורת הגדרת שם מקרו תקינה
+                        /* שורת הגדרת שם מקרו תקינה*/
                         free(macroContent);
                         macroContent = NULL;
                         macroContentSize = 0;
@@ -137,30 +136,34 @@ void processFile(const char *inputFilename)
                     }
                 }
             }
-            // קרתה הגדרת מאקרו ללא שם אחריו
+            /* קרתה הגדרת מאקרו ללא שם אחריו*/
             else
             {
                 regetError("Error: Macro name missing.", outputFile, outputFilename);
             }
         }
-        // בדיקה האם יש כאן סיום של הגדרת מאקרו
-        else if (insideMacro && token && strcmp(token, "endmacr") == 0)
+        /* בדיקה האם יש כאן סיום של הגדרת מאקרו*/
+        else if (token && strcmp(token, "endmacr") == 0)
         {
+            if (insideMacro == 0)
+            {
+                regetError("Error: End macr without undefine macr.", outputFile, outputFilename);
+            }
             token = strtok(NULL, " \t\n");
             if (token)
             {
                 regetError("Error: Additional characters at the end.", outputFile, outputFilename);
             }
-            // בדיקה האם הוגדר מאקרו ללא תוכן
+            /* בדיקה האם הוגדר מאקרו ללא תוכן*/
             if (macroContent == NULL)
             {
                 regetError("Error: Memory allocation failed.", outputFile, outputFilename);
             }
-            // הוספת מאקרו חדש
+            /* הוספת מאקרו חדש*/
             addMacro(macroName, macroContent);
             insideMacro = 0;
         }
-        // שמירת תוכן המאקרו
+        /* שמירת תוכן המאקרו*/
         else if (insideMacro)
         {
             size_t lineLength = strlen(line);
@@ -172,28 +175,31 @@ void processFile(const char *inputFilename)
             strcpy(macroContent + macroContentSize, line);
             macroContentSize += lineLength;
         }
-        // קריאה למאקרו והחלפתו בתוכן שלו
+        /* קריאה למאקרו והחלפתו בתוכן שלו*/
         else if (findMacro(token))
         {
             fprintf(outputFile, "%s", macroContent);
         }
-        // הוספת שורה רגילה לקובץ
+        /* הוספת שורה רגילה לקובץ*/
         else
         {
             fprintf(outputFile, "%s", line);
         }
     }
-
+    if (insideMacro)
+    {
+        regetError("Error: Macro without end.", outputFile, outputFilename);
+    }
     free(macroContent);
     fclose(inputFile);
     fclose(outputFile);
 
-    // First pass
+    /* First pass*/
     firstPass(outputFilename);
 
-    // Second pass
+    /* Second pass*/
     secondPass(outputFilename);
 
-    // Build output files
+    /* Build output files*/
     buildOutputFiles(outputFilename);
 }

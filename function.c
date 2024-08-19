@@ -247,7 +247,7 @@ int addOperation(const char *line, int numOper, int countLine, const char *newSy
             }
         }
         else
-        { // The third group of instructions - doesn't receive any operands
+        { /* The third group of instructions - doesn't receive any operands*/
             if (!operationWithoutOperand(lineCopy, newSymbolName, numOper, countLine))
             {
                 free(lineCopy);
@@ -283,7 +283,7 @@ int updateOparand(const char *line, int countLine, int countAdress)
     {
         int simbolAddress = countAdress + i;
         if (strcmp(symbols[simbolAddress].code, NOT_FOUND) == 0)
-        { // Operand not found at the first pass
+        { // Operand not found at the first pass*/
             Symbol *sym = &symbols[simbolAddress];
             strcpy(code, miunOperand(token, 1));
             strncpy(sym->code, code, CODE_SEGMENT_SIZE);
@@ -356,38 +356,38 @@ int operationWithTwoOperand(const char *line, const char *newSymbolName, int num
         return 0;
     }
 
-    strcpy(code, miunOperation(numOper, operand1, operand2)); // Create code to the operation
-    addSymbol(newSymbolName, NULL, code, 0, 0, 0);            // Add operation to the symbols
+    strcpy(code, miunOperation(numOper, operand1, operand2)); // Create code to the operation*/
+    addSymbol(newSymbolName, NULL, code, 0, 0, 0);            // Add operation to the symbols*/
 
     countWord++;
     if (isRegister(operand1) + 1 && isRegister(operand2) + 1)
     {
-        strcpy(code, miunTwoRegister(operand1, operand2)); // Create 1 code to the registers
+        strcpy(code, miunTwoRegister(operand1, operand2)); /* Create 1 code to the registers*/
         addSymbol(NULL, NULL, code, 0, 0, 0);
         countWord++;
     }
     else
     {
-        strcpy(code, miunOperand(operand1, 1)); // Create code to operand1
+        strcpy(code, miunOperand(operand1, 1)); /* Create code to operand1*/
         if (findExtern(operand1))
         {
-            addSymbol(NULL, operand1, code, 0, 0, 1); // Add symbol with operand1
+            addSymbol(NULL, operand1, code, 0, 0, 1); /* Add symbol with operand1*/
             countWord++;
         }
         else
         {
-            addSymbol(NULL, NULL, code, 0, 0, 0); // Add symbol with operand1
+            addSymbol(NULL, NULL, code, 0, 0, 0); /* Add symbol with operand1*/
             countWord++;
         }
-        strcpy(code, miunOperand(operand2, 0)); // Create code to operand2
+        strcpy(code, miunOperand(operand2, 0)); /* Create code to operand2*/
         if (findExtern(operand2))
         {
-            addSymbol(NULL, operand2, code, 0, 0, 1); // Add symbol with operand2
+            addSymbol(NULL, operand2, code, 0, 0, 1); /* Add symbol with operand2*/
             countWord++;
         }
         else
         {
-            addSymbol(NULL, NULL, code, 0, 0, 0); // Add symbol with operand2
+            addSymbol(NULL, NULL, code, 0, 0, 0); /* Add symbol with operand2*/
             countWord++;
         }
     }
