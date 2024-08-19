@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "preAssembler.h"
+#include "transition.h"
 #include "function.h"
 
 Macro *macros = NULL;
@@ -80,6 +81,21 @@ void processFile(const char *inputFilename)
 {
     char outputFilename[FILENAME_MAX];
     strcpy(outputFilename, inputFilename);
+    if (inputFilename)
+    {
+        /* code */
+    }
+    char *dot;
+    dot = strrchr(outputFilename, '.');
+    if (dot && strcmp(dot, ".as") == 0)
+    {
+        *dot = '\0';
+    }
+    else
+    {
+        fprintf(stderr, "Error: file name is incorrect.\n");
+        return;
+    }
     strcat(outputFilename, ".am");
 
     FILE *inputFile = fopen(inputFilename, "r");
