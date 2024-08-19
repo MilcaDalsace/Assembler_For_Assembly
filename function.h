@@ -55,6 +55,14 @@ extern int DC;
 
 int addData(const char *line, int countLine,const char * newSymbolName);
 
+int addString(const char *line, int countLine, const char *newSymbolName);
+
+int externDefinition(const char *line, int countLine);
+
+int entryDefinition(const char *line, int countLine);
+
+int addOperation(const char *line,int numOper, int countLine, const char *newSymbolName);
+
 //check if it a num
 int isNumber(const char *str);
 

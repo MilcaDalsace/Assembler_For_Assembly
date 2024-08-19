@@ -32,13 +32,13 @@ L *l = NULL;
 int IC = 0;
 int DC = 0;
 
-int addData(const char *line, int countLine,const char * newSymbolName)
+int addData(const char *line, int countLine, const char *newSymbolName)
 {
-    int countWord=0;
+    int countWord = 0;
     char code[CODE_SEGMENT_SIZE];
     if (line != NULL && correctCommas(line))
     {
-        char * token= strtok(line, ", \t\n");
+        char *token = strtok(line, ", \t\n");
         while (token != NULL)
         {
             if (token && isNumber(token))
@@ -64,9 +64,234 @@ int addData(const char *line, int countLine,const char * newSymbolName)
         return 0;
     }
     DC += countWord;
+    addL(countLine, countWord);
     return 1;
 }
 
+int addString(const char *line, int countLine, const char *newSymbolName)
+{
+    int countWord = 0;
+    char code[CODE_SEGMENT_SIZE];
+    char *token = strtok(line, " \t\n");
+    if (isCorrectString(token) == 0)
+    {
+        fprintf(stderr, "Error: line %d Missing quotation marks.\n", countLine);
+        return 0;
+    }
+    else
+    {
+        int length = strlen(token);
+        fprintf(stderr, " line: %d %d length.\n", countLine, length);
+        char charToAdd = token[1];
+        int value = charToAdd;                                                   // ASCII value
+        strcpy(code, decimalToBinary(value, CODE_SEGMENT_SIZE - 1));             // Create binary code
+        addSymbol(newSymbolName, NULL, code, 1, 0, 0);                           // The first word
+        fprintf(stderr, " line: %d add %d  to symbol.\n", countLine, charToAdd); // check
+        countWord++;
+        for (int i = 2; i < length - 1; i++)
+        {
+            charToAdd = token[i];
+            value = charToAdd;                                                      // ASCII value
+            strcpy(code, decimalToBinary(value, CODE_SEGMENT_SIZE - 1));            // Create binary code
+            addSymbol(NULL, NULL, code, 1, 0, 0);                                   // All the next chars
+            fprintf(stderr, " line: %d add %d to symbol.\n", countLine, charToAdd); // check
+            countWord++;
+        }
+        strcpy(code, decimalToBinary(0, CODE_SEGMENT_SIZE - 1));    // Create binary code
+        addSymbol(NULL, NULL, code, 1, 0, 0);                       // Add /0 at the end
+        fprintf(stderr, " line: %d add O to symbol.\n", countLine); // check
+        countWord++;
+
+        token = strtok(NULL, " \t\n");
+        if (token)
+        {
+            fprintf(stderr, "Error: line %d Additional characters at the line.\n", countLine);
+            return 0;
+        }
+        DC += countWord;
+        addL(countLine, countWord);
+        return 1;
+    }
+}
+
+int externDefinition(const char *line, int countLine)
+{
+    char *remaining = line;
+    if (remaining && correctCommas(remaining))
+    {
+        char *token = strtok(line, " \t\n");
+        while (token != NULL)
+        {
+            addExtern(token); // Add extern
+            token = strtok(NULL, " \t\n");
+        }
+        addL(countLine, 0);
+        return 1;
+    }
+    else
+    {
+        fprintf(stderr, "Error: line %d the Extern definition is uncorrect.\n", countLine);
+        return 0;
+    }
+}
+
+int entryDefinition(const char *line, int countLine)
+{
+    char *token = strtok(line, " \t\n");
+    if (token)
+    {
+        if (findLabbel(token) + 1)
+        {
+            Symbol *sym = &symbols[findLabbel(token)];
+            if (sym)
+            {
+                sym->isEntry = 1;
+                fprintf(stderr, " line: %d %s entry andicated.\n", countLine, token);
+            }
+        }
+        else
+        {
+            fprintf(stderr, " line: %d %s not yet found in labbels.\n", countLine, token);
+        }
+
+        token = strtok(NULL, " \t\n");
+        if (token)
+        {
+            fprintf(stderr, "Error: line %d Additional characters at the line.\n", countLine);
+            return 0;
+        }
+    }
+    else
+    {
+        fprintf(stderr, "Error: line %d Labbel name is missing.\n", countLine);
+        return 0;
+    }
+    addL(countLine, 0);
+    return 1;
+}
+
+int addOperation(const char *line, int numOper, int countLine, const char *newSymbolName)
+{
+    int countWord = 0;
+    char code[CODE_SEGMENT_SIZE];
+
+    if ((!line) || line && correctCommas(line))
+    {
+        char operand1[MAX_LINE_LENGTH];
+        char operand2[MAX_LINE_LENGTH];
+        char *token = strtok(line, " ,\t\n");
+
+        if (numOper < 5)
+        { // The first group of instructions - receives 2 operands
+            if (token)
+            {
+                strcpy(operand1, token);
+                token = strtok(NULL, " ,\t\n");
+            }
+            else
+            {
+                fprintf(stderr, "Error: line %d Missing operand1.\n", countLine);
+                return 0;
+            }
+            if (token)
+            {
+                strcpy(operand2, token);
+            }
+            else
+            {
+                fprintf(stderr, "Error: line %d Missing operand2.\n", countLine);
+                return 0;
+            }
+
+            strcpy(code, miunOperation(numOper, operand1, operand2)); // Create code to the operation
+            addSymbol(newSymbolName, NULL, code, 0, 0, 0);            // Add operation to the symbols
+
+            countWord++;
+            if (isRegister(operand1) + 1 && isRegister(operand2) + 1)
+            {
+                strcpy(code, miunTwoRegister(operand1, operand2)); // Create 1 code to the registers
+                addSymbol(NULL, NULL, code, 0, 0, 0);
+                countWord++;
+            }
+            else
+            {
+                strcpy(code, miunOperand(operand1, 1)); // Create code to operand1
+                if (findExtern(operand1))
+                {
+                    addSymbol(NULL, operand1, code, 0, 0, 1); // Add symbol with operand1
+                    countWord++;
+                }
+                else
+                {
+                    addSymbol(NULL, NULL, code, 0, 0, 0); // Add symbol with operand1
+                    countWord++;
+                }
+                strcpy(code, miunOperand(operand2, 0)); // Create code to operand2
+                if (findExtern(operand2))
+                {
+                    addSymbol(NULL, operand2, code, 0, 0, 1); // Add symbol with operand2
+                    countWord++;
+                }
+                else
+                {
+                    addSymbol(NULL, NULL, code, 0, 0, 0); // Add symbol with operand2
+                    countWord++;
+                }
+            }
+        }
+        else if (numOper < 14)
+        { // The second group of instructions - receives 1 operand
+
+            if (token)
+            {
+                strcpy(operand1, token);
+            }
+            else
+            {
+                fprintf(stderr, "Error: line %d Missing operand.\n", countLine);
+                return 0;
+            }
+
+            strcpy(code, miunOperation(numOper, NULL, operand1)); // Create code to the operation
+
+            addSymbol(newSymbolName, NULL, code, 0, 0, 0); // Add operation to the symbols
+            countWord++;
+            strcpy(code, miunOperand(operand1, 1)); // Create code to operand1
+            if (findExtern(operand1))
+            {
+                addSymbol(NULL, operand1, code, 0, 0, 1); // Add symbol with operand2
+                countWord++;
+            }
+            else
+            {
+                addSymbol(NULL, NULL, code, 0, 0, 0); // Add symbol with operand1
+                countWord++;
+            }
+        }
+        else
+        { // The third group of instructions - doesn't receive any operands
+
+            strcpy(code, miunOperation(numOper, NULL, NULL)); // Create code to the operation
+            addSymbol(newSymbolName, NULL, code, 0, 0, 0);    // Add operation to the symbols
+            countWord++;
+        }
+
+        token = strtok(NULL, " \t\n");
+        if (token)
+        {
+            fprintf(stderr, "Error: line %d Additional operands.\n", countLine);
+            return 0;
+        }
+    }
+    else
+    {
+        fprintf(stderr, "line %d.\n", countLine);
+        return 0;
+    }
+    IC += countWord;
+    addL(countLine, countWord);
+    return 1;
+}
 // Restricted name
 int isNameRestricted(const char *name)
 {
