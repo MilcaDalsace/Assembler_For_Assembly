@@ -6,7 +6,7 @@
 #include "transition.h"
 #include "function.h"
 
-// First pass
+/* First pass*/
 void firstPass(const char *sourceFilename)
 {
     FILE *sourceFile = fopen(sourceFilename, "r");
@@ -30,23 +30,23 @@ void firstPass(const char *sourceFilename)
         char *token = strtok(lineToCheck, " \t\n");
         if (token)
         {
-            newSymbolName = labelDefinition(token); // Check if it is a new label
+            newSymbolName = labelDefinition(token); /* Check if it is a new label*/
             if ((newSymbolName))
-            { // Label definition
+            { /* Label definition*/
                 if (isNameRestricted(newSymbolName))
-                { // Check if it is a restricted name
+                { /* Check if it is a restricted name*/
                     fprintf(stderr, "Error: line %d %s  is restricted name.\n", countLine, newSymbolName);
                     uncorrect = 1;
                 }
                 else
-                {                                                                                // A new correct label
-                    token = strtok(NULL, " \t\n");                                               // Next field
-                    fprintf(stderr, "line: %d %s naw symbol name.\n", countLine, newSymbolName); // check
+                {                                                                                /* A new correct label*/
+                    token = strtok(NULL, " \t\n");                                               /* Next field*/
+                    fprintf(stderr, "line: %d %s naw symbol name.\n", countLine, newSymbolName); /* check*/
                 }
             }
             if (token)
             {
-                // Data
+                /* Data*/
                 if (strcmp(token, ".data") == 0)
                 {
                     char *remaining = strtok(NULL, "");
@@ -55,7 +55,7 @@ void firstPass(const char *sourceFilename)
                         uncorrect = 1;
                     }
                 }
-                // String
+                /* String*/
                 else if (strcmp(token, ".string") == 0)
                 {
                     char *remaining = strtok(NULL, "");
@@ -64,7 +64,7 @@ void firstPass(const char *sourceFilename)
                         uncorrect = 1;
                     }
                 }
-                // Extern
+                /* Extern*/
                 else if (strcmp(token, ".extern") == 0)
                 {
                     char *remaining = strtok(NULL, "");
@@ -74,7 +74,7 @@ void firstPass(const char *sourceFilename)
                     }
                     addL(countLine, 0);
                 }
-                // Entry
+                /* Entry*/
                 else if (strcmp(token, ".entry") == 0)
                 {
                     char *remaining = strtok(NULL, "");
@@ -84,7 +84,7 @@ void firstPass(const char *sourceFilename)
                     }
                     addL(countLine, 0);
                 }
-                // Operation list
+                /* Operation list*/
                 else if (findOperation(token) + 1)
                 {
                     int numOper = findOperation(token);
@@ -95,7 +95,7 @@ void firstPass(const char *sourceFilename)
                     }
                 }
             }
-            // Uncorrect introduction
+            /* Uncorrect introduction*/
             else if (strcmp(token, ";"))
             {
                 fprintf(stderr, "Error: line %d introduction? name incorrect.\n", countLine);
@@ -114,10 +114,10 @@ void firstPass(const char *sourceFilename)
     }
 }
 
-// Second pass
+/* Second pass*/
 void secondPass(const char *sourceFilename)
 {
-    fprintf(stderr, "second pass.\n"); // check
+    fprintf(stderr, "second pass.\n"); /* check*/
     FILE *sourceFile = fopen(sourceFilename, "r");
     if (!sourceFile)
     {
@@ -137,24 +137,24 @@ void secondPass(const char *sourceFilename)
         strcpy(lineToCheck, line);
         countLine++;
         char *token = strtok(lineToCheck, " \t\n");
-        // label
+        /* label*/
         if (token)
         {
-            newSymbolName = labelDefinition(token); // Check if it is a label
+            newSymbolName = labelDefinition(token); /* Check if it is a label*/
             if ((newSymbolName) != NULL)
-            {                                  // Label definition
-                token = strtok(NULL, " \t\n"); // Next field
+            {                                  /* Label definition*/
+                token = strtok(NULL, " \t\n"); /* Next field*/
             }
         }
-        // check the first operation
+        /* check the first operation*/
         if (token)
         {
-            // Check if the definition has done
+            /* Check if the definition has done*/
             if ((strcmp(token, ";") == 0) || (strcmp(token, ".data") == 0) || (strcmp(token, ".string") == 0) || (strcmp(token, ".extern") == 0))
             {
                 continue;
             }
-            // Entry
+            /* Entry*/
             else if (strcmp(token, ".entry") == 0)
             {
                 char *remaining = strtok(NULL, "");
@@ -163,7 +163,7 @@ void secondPass(const char *sourceFilename)
                     uncorrect = 1;
                 }
             }
-            // Operation list
+            /* Operation list*/
             else if (findOperation(token) + 1)
             {
                 char *remaining = strtok(NULL, "");
@@ -184,11 +184,11 @@ void secondPass(const char *sourceFilename)
     fclose(sourceFile);
 }
 
-// Build output files
+/* Build output files*/
 void buildOutputFiles(const char *sourceFilename)
 {
 
-    fprintf(stderr, "build out put files.\n"); // check
+    fprintf(stderr, "build out put files.\n"); /* check*/
     FILE *sourceFile = fopen(sourceFilename, "r");
     if (!sourceFile)
     {
@@ -196,7 +196,7 @@ void buildOutputFiles(const char *sourceFilename)
         return;
     }
 
-    // Create .ob file
+    /* Create .ob file*/
     char objectFilename[MAX_LINE_LENGTH];
     strcpy(objectFilename, changeNameOfFile(sourceFilename, ".ob"));
 
@@ -207,7 +207,7 @@ void buildOutputFiles(const char *sourceFilename)
         return;
     }
 
-    // Create .ext file
+    /* Create .ext file*/
     char externFilename[MAX_LINE_LENGTH];
     strcpy(externFilename, changeNameOfFile(sourceFilename, ".ext"));
 
@@ -220,7 +220,7 @@ void buildOutputFiles(const char *sourceFilename)
     }
     int externExist = 0;
 
-    // Create .ent file
+    /* Create .ent file*/
     char entryFilename[MAX_LINE_LENGTH];
     strcpy(entryFilename, changeNameOfFile(sourceFilename, ".ent"));
 
@@ -232,14 +232,14 @@ void buildOutputFiles(const char *sourceFilename)
     }
     int entryExist = 0;
 
-    // Write to .ob file and to .ext file
+    /* Write to .ob file and to .ext file*/
     fprintf(obFile, "%d \t %d \n", IC, DC);
     for (int i = 0; i < symbolCount; i++)
     {
         Symbol *sym = &symbols[i];
         int codeInDecimal = binaryToDecimal(sym->code);
         fprintf(obFile, "%04d \t %05o \n", sym->address, codeInDecimal);
-        fprintf(obFile, "%s\n", sym->code); // check the  binary code
+        fprintf(obFile, "%s\n", sym->code); /* check the  binary code*/
         if (sym->isExtern)
         {
             externExist = 1;
@@ -248,7 +248,7 @@ void buildOutputFiles(const char *sourceFilename)
         }
     }
 
-    // write to .ent file
+    /* write to .ent file*/
     for (int i = 0; i < labelCount; i++)
     {
         Symbol *sym = &symbols[symbolTable[i].count];
@@ -264,13 +264,13 @@ void buildOutputFiles(const char *sourceFilename)
     fclose(entFile);
     fclose(obFile);
 
-    // no entryes
+    /* no entryes*/
     if (!entryExist)
     {
         remove(entryFilename);
     }
 
-    // no externs
+    /* no externs*/
     if (!externExist)
     {
         remove(externFilename);

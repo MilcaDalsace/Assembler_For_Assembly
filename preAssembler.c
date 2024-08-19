@@ -116,6 +116,7 @@ void processFile(const char *inputFilename)
                 if (findOperation(token) + 1)
                 {
                     regetError("Error: Macro name restricted.", outputFile, outputFilename);
+                    return;
                 }
                 else
                 {

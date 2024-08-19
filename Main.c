@@ -1,4 +1,3 @@
-/*בדיקה האם מספר הקבצים שהגיעו תקין*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,7 +29,7 @@ void freeMemory(){
         free(macros[i].content);
     }
     free(macros);
-    // Free allocated memory
+    /* Free allocated memory*/
     for (i = 0; i < symbolCount; i++)
     {
         free(symbolTable[i].name);

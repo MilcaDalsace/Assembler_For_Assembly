@@ -5,7 +5,7 @@
 #define CODE_SIZE 4
 #define ARE_SIZE 3
 
-// Constant strings for addressing methods
+/* Constant strings for addressing methods*/
 extern const char IMMEDIATE_ADDRESS[];
 extern const char DIRECT_ADDRESS[];
 extern const char INDIRECT_HOARD_ADDRESS[];
@@ -75,61 +75,61 @@ int operationWithoutOperand(const char *line, const char *newSymbolName, int num
 
 /*int checkIfLabbleIsData(const char* label);*/
 
-//check if it a num
+/*check if it a num*/
 int isNumber(const char *str);
 
-//check if it is name restricted
+/*check if it is name restricted*/
 int isNameRestricted(const char *name);
 
-//check if it register
+/*check if it register*/
 int isRegister( const char *name);
 
-//find method addressing
+/*find method addressing*/
 char* findsMethodOfAddressing(const char *operand);
 
-//miun operation
+/*miun operation*/
 char* miunOperation(int num, const char *operand1, const char *operand2);
 
-//miun operand
+/*miun operand*/
 char* miunOperand(const char *operand, int firstOperand);
 
-//iun two registers
+/*iun two registers*/
 char* miunTwoRegister(const char *operand1, const char *operand2);
 
-//add symbol
+/*add symbol*/
 void addSymbol(const char *symbolName, const char *externName, const char *code, const int isData, const int isEntry, const int isExtern);
 
-//add labbel
+/*add labbel*/
 void addLabbel(const char *name, const int count);
 
-//add extern
+/*add extern*/
 void addExtern(const char *name);
 
-//add L
+/*add L*/
 void addL(int counteLine, int wordCounter);
 
-//check if it a labbel definition
+/*check if it a labbel definition*/
 char* labelDefinition(const char *token);
 
-//find labbel
+/*find labbel*/
 int findLabbel(const char *token);
 
-//find extern
+/*find extern*/
 char* findExtern(const char *externName);
 
-//is restricted name
+/*is restricted name*/
 int isNameRestricted(const char *token);
 
-//find operation
+/*find operation*/
 int findOperation(const char *token);
 
-//binary to decimal
+/*binary to decimal*/
 int binaryToDecimal(const char *binary);
 
-//decimal to binary
+/*decimal to binary*/
 char* decimalToBinary(int n, int numOfChar);
 
 int isCorrectString(const char *name);
 
-//check if the datas write correct
+/*check if the datas write correct*/
 int correctCommas(char *line);

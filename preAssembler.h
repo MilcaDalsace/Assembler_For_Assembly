@@ -11,7 +11,7 @@ extern Macro *macros;
 extern int macroCount;
 
 /*is name restricted האם השם שמור?*/
-//int isNameRestricted(const char *name);
+/*int isNameRestricted(const char *name);*/
 
 /*יצירת מקרו חדש והוספתו לרשימת המקרוים*/
 void addMacro(const char *name, const char *content) ;
