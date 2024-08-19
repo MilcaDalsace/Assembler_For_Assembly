@@ -36,9 +36,18 @@ int addData(const char *line, int countLine, const char *newSymbolName)
 {
     int countWord = 0;
     char code[CODE_SEGMENT_SIZE];
-    if (line != NULL && correctCommas(line))
+    char *lineCopy;
+    if (line)
     {
-        char *token = strtok(line, ", \t\n");
+        lineCopy = strdup(line);
+    }
+    else
+    {
+        lineCopy = NULL;
+    }
+    if (lineCopy != NULL && correctCommas(lineCopy))
+    {
+        char *token = strtok(lineCopy, ", \t\n");
         while (token != NULL)
         {
             if (token && isNumber(token))
@@ -72,7 +81,16 @@ int addString(const char *line, int countLine, const char *newSymbolName)
 {
     int countWord = 0;
     char code[CODE_SEGMENT_SIZE];
-    char *token = strtok(line, " \t\n");
+    char *lineCopy;
+    if (line)
+    {
+        lineCopy = strdup(line);
+    }
+    else
+    {
+        lineCopy = NULL;
+    }
+    char *token = strtok(lineCopy, " \t\n");
     if (isCorrectString(token) == 0)
     {
         fprintf(stderr, "Error: line %d Missing quotation marks.\n", countLine);
@@ -116,10 +134,19 @@ int addString(const char *line, int countLine, const char *newSymbolName)
 
 int externDefinition(const char *line, int countLine)
 {
-    char *remaining = line;
+    char *remaining = strdup(line);
+    char *lineCopy;
+    if (line)
+    {
+        lineCopy = strdup(line);
+    }
+    else
+    {
+        lineCopy = NULL;
+    }
     if (remaining && correctCommas(remaining))
     {
-        char *token = strtok(line, " \t\n");
+        char *token = strtok(lineCopy, " \t\n");
         while (token != NULL)
         {
             if (isNameRestricted(token))
@@ -144,7 +171,16 @@ int externDefinition(const char *line, int countLine)
 
 int entryDefinition(const char *line, int countLine, int isFirstPass)
 {
-    char *token = strtok(line, " \t\n");
+    char *lineCopy;
+    if (line)
+    {
+        lineCopy = strdup(line);
+    }
+    else
+    {
+        lineCopy = NULL;
+    }
+    char *token = strtok(lineCopy, " \t\n");
     if (token)
     {
         if (findLabbel(token) + 1)
@@ -182,140 +218,65 @@ int entryDefinition(const char *line, int countLine, int isFirstPass)
 
 int addOperation(const char *line, int numOper, int countLine, const char *newSymbolName)
 {
-    /*int countWord = 0;
-    char code[CODE_SEGMENT_SIZE];*/
-
-    if ((!line) || line && correctCommas(line))
+    char *lineCopy;
+    if (line)
     {
-        /*char operand1[MAX_LINE_LENGTH];
-        char operand2[MAX_LINE_LENGTH];
-        char *token = strtok(line, " ,\t\n");*/
+        lineCopy = strdup(line);
+    }
+    else
+    {
+        lineCopy = NULL;
+    }
 
+    if ((!line) || lineCopy && correctCommas(lineCopy))
+    {
         if (numOper < 5)
         { // The first group of instructions - receives 2 operands
-            if (!operationWithTwoOperand(line, newSymbolName, numOper, countLine))
+            if (!operationWithTwoOperand(lineCopy, newSymbolName, numOper, countLine))
             {
+                free(lineCopy);
                 return 0;
             }
-            /*if (token)
-            {
-                strcpy(operand1, token);
-                token = strtok(NULL, " ,\t\n");
-            }
-            else
-            {
-                fprintf(stderr, "Error: line %d Missing operand1.\n", countLine);
-                return 0;
-            }
-            if (token)
-            {
-                strcpy(operand2, token);
-            }
-            else
-            {
-                fprintf(stderr, "Error: line %d Missing operand2.\n", countLine);
-                return 0;
-            }
-
-            strcpy(code, miunOperation(numOper, operand1, operand2)); // Create code to the operation
-            addSymbol(newSymbolName, NULL, code, 0, 0, 0);            // Add operation to the symbols
-
-            countWord++;
-            if (isRegister(operand1) + 1 && isRegister(operand2) + 1)
-            {
-                strcpy(code, miunTwoRegister(operand1, operand2)); // Create 1 code to the registers
-                addSymbol(NULL, NULL, code, 0, 0, 0);
-                countWord++;
-            }
-            else
-            {
-                strcpy(code, miunOperand(operand1, 1)); // Create code to operand1
-                if (findExtern(operand1))
-                {
-                    addSymbol(NULL, operand1, code, 0, 0, 1); // Add symbol with operand1
-                    countWord++;
-                }
-                else
-                {
-                    addSymbol(NULL, NULL, code, 0, 0, 0); // Add symbol with operand1
-                    countWord++;
-                }
-                strcpy(code, miunOperand(operand2, 0)); // Create code to operand2
-                if (findExtern(operand2))
-                {
-                    addSymbol(NULL, operand2, code, 0, 0, 1); // Add symbol with operand2
-                    countWord++;
-                }
-                else
-                {
-                    addSymbol(NULL, NULL, code, 0, 0, 0); // Add symbol with operand2
-                    countWord++;
-                }
-            }*/
         }
         else if (numOper < 14)
         { // The second group of instructions - receives 1 operand
-            if (!operationWithOneOperand(line, newSymbolName, numOper, countLine))
+            if (!operationWithOneOperand(lineCopy, newSymbolName, numOper, countLine))
             {
+                free(lineCopy);
                 return 0;
             }
-            /* if (token)
-             {
-                 strcpy(operand1, token);
-             }
-             else
-             {
-                 fprintf(stderr, "Error: line %d Missing operand.\n", countLine);
-                 return 0;
-             }
-
-             strcpy(code, miunOperation(numOper, NULL, operand1)); // Create code to the operation
-
-             addSymbol(newSymbolName, NULL, code, 0, 0, 0); // Add operation to the symbols
-             countWord++;
-             strcpy(code, miunOperand(operand1, 1)); // Create code to operand1
-             if (findExtern(operand1))
-             {
-                 addSymbol(NULL, operand1, code, 0, 0, 1); // Add symbol with operand2
-                 countWord++;
-             }
-             else
-             {
-                 addSymbol(NULL, NULL, code, 0, 0, 0); // Add symbol with operand1
-                 countWord++;
-             }*/
         }
         else
         { // The third group of instructions - doesn't receive any operands
-            if (!operationWithoutOperand(line, newSymbolName, numOper, countLine))
+            if (!operationWithoutOperand(lineCopy, newSymbolName, numOper, countLine))
             {
+                free(lineCopy);
                 return 0;
             }
-            /* strcpy(code, miunOperation(numOper, NULL, NULL)); // Create code to the operation
-                        addSymbol(newSymbolName, NULL, code, 0, 0, 0);    // Add operation to the symbols
-                        countWord++;*/
         }
-
-        /*token = strtok(NULL, " \t\n");
-        if (token)
-        {
-            fprintf(stderr, "Error: line %d Additional operands.\n", countLine);
-            return 0;
-        }*/
     }
     else
     {
         fprintf(stderr, "line %d.\n", countLine);
+        free(lineCopy);
         return 0;
     }
-    /*IC += countWord;
-    addL(countLine, countWord);*/
+    free(lineCopy);
     return 1;
 }
 
 int updateOparand(const char *line, int countLine, int countAdress)
 {
-    char *token = strtok(line, " ,\t\n");
+    char *lineCopy;
+    if (line)
+    {
+        lineCopy = strdup(line);
+    }
+    else
+    {
+        lineCopy = NULL;
+    }
+    char *token = strtok(lineCopy, " ,\t\n");
     char code[CODE_SEGMENT_SIZE];
     int i = 1;
     while (token != NULL)
@@ -343,7 +304,7 @@ int updateOparand(const char *line, int countLine, int countAdress)
     return 1;
 }
 
-char *changeNameOfFile(const char *sourceFileName,const char *fileNameEnding)
+char *changeNameOfFile(const char *sourceFileName, const char *fileNameEnding)
 {
     char *dot = strrchr(sourceFileName, '.');
     char *updateFileName;
@@ -358,12 +319,21 @@ char *changeNameOfFile(const char *sourceFileName,const char *fileNameEnding)
     return updateFileName;
 }
 
-int operationWithTwoOperand(char *line, char *newSymbolName, int numOper, int countLine)
+int operationWithTwoOperand(const char *line, const char *newSymbolName, int numOper, int countLine)
 {
     char code[CODE_SEGMENT_SIZE];
     char operand1[MAX_LINE_LENGTH];
     char operand2[MAX_LINE_LENGTH];
-    char *token = strtok(line, " ,\t\n");
+    char *lineCopy;
+    if (line)
+    {
+        lineCopy = strdup(line);
+    }
+    else
+    {
+        lineCopy = NULL;
+    }
+    char *token = strtok(lineCopy, " ,\t\n");
     int countWord = 0;
 
     if (token)
@@ -432,11 +402,20 @@ int operationWithTwoOperand(char *line, char *newSymbolName, int numOper, int co
     return 1;
 }
 
-int operationWithOneOperand(char *line, char *newSymbolName, int numOper, int countLine)
+int operationWithOneOperand(const char *line, const char *newSymbolName, int numOper, int countLine)
 {
     char code[CODE_SEGMENT_SIZE];
     char operand1[MAX_LINE_LENGTH];
-    char *token = strtok(line, " ,\t\n");
+    char *lineCopy;
+    if (line)
+    {
+        lineCopy = strdup(line);
+    }
+    else
+    {
+        lineCopy = NULL;
+    }
+    char *token = strtok(lineCopy, " ,\t\n");
     int countWord = 0;
     if (token)
     {
@@ -474,16 +453,16 @@ int operationWithOneOperand(char *line, char *newSymbolName, int numOper, int co
     return 1;
 }
 
-int operationWithoutOperand(char *line, char *newSymbolName, int numOper, int countLine)
+int operationWithoutOperand(const char *line, const char *newSymbolName, int numOper, int countLine)
 {
     char code[CODE_SEGMENT_SIZE];
-    char *token = strtok(line, " ,\t\n");
+    // char *token = strtok(line, " ,\t\n");
     int countWord = 0;
     strcpy(code, miunOperation(numOper, NULL, NULL)); // Create code to the operation
     addSymbol(newSymbolName, NULL, code, 0, 0, 0);    // Add operation to the symbols
     countWord++;
-    token = strtok(NULL, " \t\n");
-    if (token)
+    // token = strtok(NULL, " \t\n");
+    if (line)
     {
         fprintf(stderr, "Error: line %d Additional operands.\n", countLine);
         return 0;
@@ -493,6 +472,120 @@ int operationWithoutOperand(char *line, char *newSymbolName, int numOper, int co
     return 1;
 }
 
+int checkIfLabbleIsData(const char *label)
+{
+    int labelAddress = findLabbel(label);
+    if (labelAddress + 1)
+    {
+        Symbol *sym = &symbols[labelAddress];
+        if (sym->isData == 0)
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+/*int instructionOperandIsCorrect(int numOper, const char *operand1, const char *operand2)
+{
+    if (!checkIfLabbleIsData(operand1) || !checkIfLabbleIsData(operand2))
+    {
+        return 0;
+    }
+    switch (numOper)
+    {
+    case 0:
+    {
+        if (findLabbel(operand2) + 1 || operand2[0] == "#")
+        {
+            return 0;
+        }
+        return 1;
+    }
+    case 2:
+    {
+        if (findLabbel(operand2) + 1 || operand2[0] == "#")
+        {
+            return 0;
+        }
+        return 1;
+    }
+    case 3:
+    {
+        if (findLabbel(operand2) + 1 || operand2[0] == "#")
+        {
+            return 0;
+        }
+        return 1;
+    }
+    case 4:
+    {
+        if ((findLabbel(operand2) + 1 || operand2[0] == "#") || (findLabbel(operand1) + 1) == 0)
+        {
+            return 0;
+        }
+        return 1;
+    }
+    case 5:
+    {
+        if (findLabbel(operand1) + 1 || operand1[0] == "#")
+        {
+            return 0;
+        }
+        return 1;
+    }
+    case 6:
+    {
+        if (findLabbel(operand1) + 1 || operand1[0] == "#")
+        {
+            return 0;
+        }
+        return 1;
+    }
+    case 7:
+    {
+        if (findLabbel(operand1) + 1 || operand1[0] == "#")
+        {
+            return 0;
+        }
+        return 1;
+    }
+    case 8:
+    {
+        if (findLabbel(operand1) + 1 || operand1[0] == "#")
+            return 0;
+        return 1;
+    }
+    case 9:
+    {
+        if (findLabbel(operand1) + 1 == 0)
+            return 0;
+        return 1;
+    }
+    case 10:
+        if (findLabbel(operand1) + 1 == 0)
+            return 0;
+        return 1;
+    case 11:
+    {
+        if (isRegister(operand1) + 1)
+        {
+            return 1;
+        }
+        return 0;
+    }
+
+    case 12:
+{
+        if (isRegister(operand1) + 1)
+        {
+            return 1;
+        }
+        return 0;}
+    default:
+        return 1;
+    }
+}*/
 // Restricted name
 int isNameRestricted(const char *name)
 {

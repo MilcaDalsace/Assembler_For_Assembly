@@ -67,11 +67,13 @@ int updateOparand(const char *line, int countLine, int countAdress);
 
 char *changeNameOfFile(const char *sourceFileName,const char *fileNameEnding);
 
-int operationWithTwoOperand(char *line,char* newSymbolName, int numOper, int countLine);
+int operationWithTwoOperand(const char *line,const char* newSymbolName, int numOper, int countLine);
 
-int operationWithOneOperand(char *line, char *newSymbolName, int numOper, int countLine);
+int operationWithOneOperand(const char *line, const char *newSymbolName, int numOper, int countLine);
 
-int operationWithoutOperand(char *line, char *newSymbolName, int numOper, int countLine);
+int operationWithoutOperand(const char *line, const char *newSymbolName, int numOper, int countLine);
+
+/*int checkIfLabbleIsData(const char* label);*/
 
 //check if it a num
 int isNumber(const char *str);
