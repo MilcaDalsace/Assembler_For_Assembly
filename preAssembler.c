@@ -8,22 +8,6 @@
 Macro *macros = NULL;
 int macroCount = 0;
 
-// is name restricted
-/*int isNameRestricted(const char *name)
-{ // hh
-    char *restrictedNames[] = {"mov", "cmp", "add", "sub", "lea", "clr", "not", "inc", "dec", "jmp", "bne", "red", "prn", "jsr", "rts", "stop"};
-    int restrictedNamesCount = 16;
-    int i;
-    for (i = 0; i < restrictedNamesCount; i++)
-    {
-        if (strcmp(name, restrictedNames[i]) == 0)
-        {
-            return 0;
-        }
-    }
-    return 1;
-}*/
-
 // יצירת מקרו חדש והוספתו לרשימת המקרוים
 void addMacro(const char *name, const char *content)
 {
@@ -79,7 +63,7 @@ void removeFileAndExit(const char *outputFilename)
 
 void regetError(const char *errorLine, FILE *outputFile, char *outputFilename)
 {
-    fprintf(stderr, errorLine);
+    fprintf(stderr,"%s", errorLine);
     if (outputFile && outputFilename)
     {
         fclose(outputFile);
@@ -90,14 +74,18 @@ void regetError(const char *errorLine, FILE *outputFile, char *outputFilename)
 void processFile(const char *inputFilename)
 {
     char outputFilename[FILENAME_MAX];
-    if (strcmp(strrchr(outputFilename, '.'), ".as") == 0)
+    strcpy(outputFilename, inputFilename);
+    char *dot;
+    dot = strrchr(outputFilename, '.');
+    if (dot && strcmp(dot, ".as") == 0)
     {
-        strcpy(outputFilename, changeNameOfFile(inputFilename, ".am"));
+        *dot = '\0';
     }
     else
     {
-        regetError("Error: file name is incorrect.", NULL, NULL);
+        regetError("Error: file name is incorrect.",NULL,NULL);
     }
+    strcat(outputFilename, ".am");
 
     FILE *inputFile = fopen(inputFilename, "r");
     if (!checkingWhetherTheFileIsCorrect(inputFile))

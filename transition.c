@@ -166,8 +166,8 @@ void secondPass(const char *sourceFilename)
             // Operation list
             else if (findOperation(token) + 1)
             {
-                char* remaining = strtok(NULL, "");
-                if (updateOparand(remaining, countLine,countAdress) == 0)
+                char *remaining = strtok(NULL, "");
+                if (updateOparand(remaining, countLine, countAdress) == 0)
                 {
                     uncorrect = 1;
                 }
@@ -198,7 +198,7 @@ void buildOutputFiles(const char *sourceFilename)
 
     // Create .ob file
     char objectFilename[MAX_LINE_LENGTH];
-    strcpy(objectFilename,changeNameOfFile(sourceFilename,".ob"));
+    strcpy(objectFilename, changeNameOfFile(sourceFilename, ".ob"));
 
     FILE *obFile = fopen(objectFilename, "w");
     if (obFile == NULL)
@@ -209,7 +209,7 @@ void buildOutputFiles(const char *sourceFilename)
 
     // Create .ext file
     char externFilename[MAX_LINE_LENGTH];
-    strcpy(externFilename,changeNameOfFile(sourceFilename,".ext"));
+    strcpy(externFilename, changeNameOfFile(sourceFilename, ".ext"));
 
     FILE *extFile = fopen(externFilename, "w");
     if (extFile == NULL)
@@ -222,7 +222,7 @@ void buildOutputFiles(const char *sourceFilename)
 
     // Create .ent file
     char entryFilename[MAX_LINE_LENGTH];
-    strcpy(entryFilename,changeNameOfFile(sourceFilename,".ent"));
+    strcpy(entryFilename, changeNameOfFile(sourceFilename, ".ent"));
 
     FILE *entFile = fopen(entryFilename, "w");
     if (entFile == NULL)
@@ -239,13 +239,10 @@ void buildOutputFiles(const char *sourceFilename)
         Symbol *sym = &symbols[i];
         int codeInDecimal = binaryToDecimal(sym->code);
         fprintf(obFile, "%04d \t %05o \n", sym->address, codeInDecimal);
-        fprintf(obFile, "%s\n", sym->code);                                       // check the  binary code
-        fprintf(stderr, "is extern: %s %04d .\n", sym->externName, sym->address); // check
+        fprintf(obFile, "%s\n", sym->code); // check the  binary code
         if (sym->isExtern)
         {
-
             externExist = 1;
-
             fprintf(extFile, "%s \t %04d \n", sym->externName, sym->address);
             fflush(extFile);
         }
@@ -255,12 +252,9 @@ void buildOutputFiles(const char *sourceFilename)
     for (int i = 0; i < labelCount; i++)
     {
         Symbol *sym = &symbols[symbolTable[i].count];
-        fprintf(stderr, "sym: %d %s is entry: %d.\n", sym->address, sym->symbol, sym->isEntry); // check
         if (sym->isEntry)
         {
             entryExist = 1;
-            fprintf(stderr, "sym: %s %04d .\n", sym->symbol, sym->address); // check
-
             fprintf(entFile, "%s \t %04d \n", sym->symbol, sym->address);
             fflush(entFile);
         }
@@ -282,5 +276,3 @@ void buildOutputFiles(const char *sourceFilename)
         remove(externFilename);
     }
 }
-
-// end

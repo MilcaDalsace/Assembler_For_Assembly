@@ -65,7 +65,13 @@ int addOperation(const char *line,int numOper, int countLine, const char *newSym
 
 int updateOparand(const char *line, int countLine, int countAdress);
 
-char *changeNameOfFile(char *sourceFileName, char *fileNameEnding);
+char *changeNameOfFile(const char *sourceFileName,const char *fileNameEnding);
+
+int operationWithTwoOperand(char *line,char* newSymbolName, int numOper, int countLine);
+
+int operationWithOneOperand(char *line, char *newSymbolName, int numOper, int countLine);
+
+int operationWithoutOperand(char *line, char *newSymbolName, int numOper, int countLine);
 
 //check if it a num
 int isNumber(const char *str);
