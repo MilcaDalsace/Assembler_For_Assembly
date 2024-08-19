@@ -332,6 +332,22 @@ int updateOparand(const char *line, int countLine, int countAdress)
     }
     return 1;
 }
+
+char *changeNameOfFile(char *sourceFileName, char *fileNameEnding)
+{
+    char *dot = strrchr(sourceFileName, '.');
+    char * updateFileName;
+    strcpy(updateFileName, sourceFileName);
+    dot = strrchr(updateFileName, '.');
+    if (dot != NULL)
+    {
+        *dot = '\0';
+    }
+
+    strcat(updateFileName, fileNameEnding);
+    return updateFileName;
+}
+
 // Restricted name
 int isNameRestricted(const char *name)
 {

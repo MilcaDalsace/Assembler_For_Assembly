@@ -166,14 +166,14 @@ void secondPass(const char *sourceFilename)
             // Operation list
             else if (findOperation(token) + 1)
             {
-                char* remaining = strtok(NULL, " ,\t\n");
+                char* remaining = strtok(NULL, "");
                 if (updateOparand(remaining, countLine,countAdress) == 0)
                 {
                     uncorrect = 1;
                 }
             }
-            countAdress += l[countLine - 1].wordCounter;
         }
+        countAdress += l[countLine - 1].wordCounter;
     }
 
     if (uncorrect == 1)
@@ -198,13 +198,7 @@ void buildOutputFiles(const char *sourceFilename)
 
     // Create .ob file
     char objectFilename[MAX_LINE_LENGTH];
-    strcpy(objectFilename, sourceFilename);
-    char *dot = strrchr(objectFilename, '.');
-    if (dot != NULL)
-    {
-        *dot = '\0'; // מחיקת הסיומת הקיימת
-    }
-    strcat(objectFilename, ".ob");
+    strcpy(objectFilename,changeNameOfFile(sourceFilename,".ob"));
 
     FILE *obFile = fopen(objectFilename, "w");
     if (obFile == NULL)
@@ -215,13 +209,7 @@ void buildOutputFiles(const char *sourceFilename)
 
     // Create .ext file
     char externFilename[MAX_LINE_LENGTH];
-    strcpy(externFilename, sourceFilename);
-    dot = strrchr(externFilename, '.');
-    if (dot != NULL)
-    {
-        *dot = '\0'; // מחיקת הסיומת הקיימת
-    }
-    strcat(externFilename, ".ext");
+    strcpy(externFilename,changeNameOfFile(sourceFilename,".ext"));
 
     FILE *extFile = fopen(externFilename, "w");
     if (extFile == NULL)
@@ -234,14 +222,7 @@ void buildOutputFiles(const char *sourceFilename)
 
     // Create .ent file
     char entryFilename[MAX_LINE_LENGTH];
-    strcpy(entryFilename, sourceFilename);
-    dot = strrchr(entryFilename, '.');
-    if (dot != NULL)
-    {
-        *dot = '\0';
-    }
-
-    strcat(entryFilename, ".ent");
+    strcpy(entryFilename,changeNameOfFile(sourceFilename,".ent"));
 
     FILE *entFile = fopen(entryFilename, "w");
     if (entFile == NULL)
@@ -249,12 +230,7 @@ void buildOutputFiles(const char *sourceFilename)
         perror("Error creating .ent file");
         return;
     }
-
     int entryExist = 0;
-
-    fprintf(stderr, "build files.\n");                    // check
-    fprintf(stderr, "num of symbol: %d.\n", symbolCount); // check
-    fprintf(stderr, "IC= %d DC= %d.\n", IC, DC);          // check
 
     // Write to .ob file and to .ext file
     fprintf(obFile, "%d \t %d \n", IC, DC);

@@ -90,18 +90,14 @@ void regetError(const char *errorLine, FILE *outputFile, char *outputFilename)
 void processFile(const char *inputFilename)
 {
     char outputFilename[FILENAME_MAX];
-    strcpy(outputFilename, inputFilename);
-    char *dot;
-    dot = strrchr(outputFilename, '.');
-    if (dot && strcmp(dot, ".as") == 0)
+    if (strcmp(strrchr(outputFilename, '.'), ".as") == 0)
     {
-        *dot = '\0';
+        strcpy(outputFilename, changeNameOfFile(inputFilename, ".am"));
     }
     else
     {
-        regetError("Error: file name is incorrect.",NULL,NULL);
+        regetError("Error: file name is incorrect.", NULL, NULL);
     }
-    strcat(outputFilename, ".am");
 
     FILE *inputFile = fopen(inputFilename, "r");
     if (!checkingWhetherTheFileIsCorrect(inputFile))
@@ -141,7 +137,7 @@ void processFile(const char *inputFilename)
                     // בדיקה אם אין תווים מיותרים בשורת ההגדרה
                     if (token)
                     {
-                        regetError("Error: Additional characters in the macro definition line.",outputFile,outputFilename);
+                        regetError("Error: Additional characters in the macro definition line.", outputFile, outputFilename);
                     }
                     else
                     {
@@ -156,7 +152,7 @@ void processFile(const char *inputFilename)
             // קרתה הגדרת מאקרו ללא שם אחריו
             else
             {
-                regetError( "Error: Macro name missing.",outputFile,outputFilename);
+                regetError("Error: Macro name missing.", outputFile, outputFilename);
             }
         }
         // בדיקה האם יש כאן סיום של הגדרת מאקרו
@@ -165,12 +161,12 @@ void processFile(const char *inputFilename)
             token = strtok(NULL, " \t\n");
             if (token)
             {
-                regetError("Error: Additional characters at the end.",outputFile,outputFilename);
+                regetError("Error: Additional characters at the end.", outputFile, outputFilename);
             }
             // בדיקה האם הוגדר מאקרו ללא תוכן
             if (macroContent == NULL)
             {
-                regetError("Error: Memory allocation failed.",outputFile,outputFilename);
+                regetError("Error: Memory allocation failed.", outputFile, outputFilename);
             }
             // הוספת מאקרו חדש
             addMacro(macroName, macroContent);
@@ -183,7 +179,7 @@ void processFile(const char *inputFilename)
             macroContent = realloc(macroContent, macroContentSize + lineLength + 1);
             if (macroContent == NULL)
             {
-                regetError("Error: Memory allocation failed.",outputFile,outputFilename);
+                regetError("Error: Memory allocation failed.", outputFile, outputFilename);
             }
             strcpy(macroContent + macroContentSize, line);
             macroContentSize += lineLength;
