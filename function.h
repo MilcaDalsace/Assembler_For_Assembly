@@ -53,6 +53,8 @@ extern L *l;
 extern int IC;
 extern int DC;
 
+int addData(const char *line, int countLine,const char * newSymbolName);
+
 //check if it a num
 int isNumber(const char *str);
 
@@ -106,6 +108,8 @@ int binaryToDecimal(const char *binary);
 
 //decimal to binary
 char* decimalToBinary(int n, int numOfChar);
+
+int isCorrectString(const char *name);
 
 //check if the datas write correct
 int correctCommas(char *line);

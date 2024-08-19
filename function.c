@@ -32,6 +32,41 @@ L *l = NULL;
 int IC = 0;
 int DC = 0;
 
+int addData(const char *line, int countLine,const char * newSymbolName)
+{
+    int countWord=0;
+    char code[CODE_SEGMENT_SIZE];
+    if (line != NULL && correctCommas(line))
+    {
+        char * token= strtok(line, ", \t\n");
+        while (token != NULL)
+        {
+            if (token && isNumber(token))
+            {
+                int value = atoi(token);
+                strcpy(code, decimalToBinary(value, CODE_SEGMENT_SIZE - 1));
+                addSymbol(newSymbolName, NULL, code, 1, 0, 0);                       // the first word
+                fprintf(stderr, " line: %d add %d  to symbol.\n", countLine, value); // check
+                newSymbolName = NULL;
+                countWord++; // add 1 L
+            }
+            else
+            {
+                fprintf(stderr, "Error: line %d not a number \n", countLine);
+                return 0;
+            }
+            token = strtok(NULL, " \t\n");
+        }
+    }
+    else
+    {
+        fprintf(stderr, "line %d \n", countLine);
+        return 0;
+    }
+    DC += countWord;
+    return 1;
+}
+
 // Restricted name
 int isNameRestricted(const char *name)
 {
@@ -44,6 +79,10 @@ int isNameRestricted(const char *name)
         return 1;
     }
     else if (findMacro(name))
+    {
+        return 1;
+    }
+    else if (findLabbel(name) + 1)
     {
         return 1;
     }
@@ -374,6 +413,15 @@ size_t len = strlen(str);
 
 */
 
+int isCorrectString(const char *name)
+{
+    if (name[0] == '"' && name[strlen(name) - 1] == '"')
+    {
+        return 1;
+    }
+    else
+        return 0;
+}
 // Check if a string is a number
 int isNumber(const char *str)
 {

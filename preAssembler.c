@@ -77,14 +77,20 @@ void removeFileAndExit(const char *outputFilename)
     }
 }
 
+void regetError(const char *errorLine, FILE *outputFile, char *outputFilename)
+{
+    fprintf(stderr, errorLine);
+    if (outputFile && outputFilename)
+    {
+        fclose(outputFile);
+        removeFileAndExit(outputFilename);
+    }
+}
+
 void processFile(const char *inputFilename)
 {
     char outputFilename[FILENAME_MAX];
     strcpy(outputFilename, inputFilename);
-    if (inputFilename)
-    {
-        /* code */
-    }
     char *dot;
     dot = strrchr(outputFilename, '.');
     if (dot && strcmp(dot, ".as") == 0)
@@ -93,8 +99,7 @@ void processFile(const char *inputFilename)
     }
     else
     {
-        fprintf(stderr, "Error: file name is incorrect.\n");
-        return;
+        regetError("Error: file name is incorrect.",NULL,NULL);
     }
     strcat(outputFilename, ".am");
 
@@ -127,9 +132,7 @@ void processFile(const char *inputFilename)
                 //  בדיקה האם שם המקרו תקין
                 if (findOperation(token) + 1)
                 {
-                    fprintf(stderr, "Error: Macro name restricted.\n");
-                    fclose(outputFile);
-                    removeFileAndExit(outputFilename);
+                    regetError("Error: Macro name restricted.", outputFile, outputFilename);
                 }
                 else
                 {
@@ -138,9 +141,7 @@ void processFile(const char *inputFilename)
                     // בדיקה אם אין תווים מיותרים בשורת ההגדרה
                     if (token)
                     {
-                        fprintf(stderr, "Error: Additional characters in the macro definition line. \n");
-                        fclose(outputFile);
-                        removeFileAndExit(outputFilename);
+                        regetError("Error: Additional characters in the macro definition line.",outputFile,outputFilename);
                     }
                     else
                     {
@@ -155,9 +156,7 @@ void processFile(const char *inputFilename)
             // קרתה הגדרת מאקרו ללא שם אחריו
             else
             {
-                fprintf(stderr, "Error: Macro name missing.\n");
-                fclose(outputFile);
-                removeFileAndExit(outputFilename);
+                regetError( "Error: Macro name missing.",outputFile,outputFilename);
             }
         }
         // בדיקה האם יש כאן סיום של הגדרת מאקרו
@@ -166,16 +165,12 @@ void processFile(const char *inputFilename)
             token = strtok(NULL, " \t\n");
             if (token)
             {
-                fprintf(stderr, "Error: Additional characters at the end. \n");
-                fclose(outputFile);
-                removeFileAndExit(outputFilename);
+                regetError("Error: Additional characters at the end.",outputFile,outputFilename);
             }
             // בדיקה האם הוגדר מאקרו ללא תוכן
             if (macroContent == NULL)
             {
-                fprintf(stderr, "Error: Memory allocation failed.\n");
-                fclose(outputFile);
-                removeFileAndExit(outputFilename);
+                regetError("Error: Memory allocation failed.",outputFile,outputFilename);
             }
             // הוספת מאקרו חדש
             addMacro(macroName, macroContent);
@@ -188,9 +183,7 @@ void processFile(const char *inputFilename)
             macroContent = realloc(macroContent, macroContentSize + lineLength + 1);
             if (macroContent == NULL)
             {
-                fprintf(stderr, "Error: Memory allocation failed.\n");
-                fclose(outputFile);
-                removeFileAndExit(outputFilename);
+                regetError("Error: Memory allocation failed.",outputFile,outputFilename);
             }
             strcpy(macroContent + macroContentSize, line);
             macroContentSize += lineLength;

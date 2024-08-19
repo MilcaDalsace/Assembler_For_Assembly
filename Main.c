@@ -22,16 +22,7 @@ int numFileIsCoorect(int argc, char *argv[])
         return 1;
 }
 
-int main(int argc, char *argv[])
-{
-    if (numFileIsCoorect(argc, argv))
-    {
-        int i;
-        for (i = 1; i < argc; i++)
-        {
-            processFile(argv[i]);
-        }
-    }
+void freeMemory(){
     int i;
     for (i = 0; i < macroCount; i++)
     {
@@ -51,5 +42,18 @@ int main(int argc, char *argv[])
     }
     free(externs);
     free(symbols);
+}
+
+int main(int argc, char *argv[])
+{
+    if (numFileIsCoorect(argc, argv))
+    {
+        int i;
+        for (i = 1; i < argc; i++)
+        {
+            processFile(argv[i]);
+        }
+    }
+    freeMemory();
     return 0;
 }
