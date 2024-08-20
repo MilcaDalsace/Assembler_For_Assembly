@@ -18,9 +18,9 @@ void addMacro(const char *name, const char *content)
         fprintf(stderr, "Error: Memory allocation failed.\n");
         exit(EXIT_FAILURE);
     }
-    macros[macroCount - 1].name = strdup(name);
+    macros[macroCount - 1].name = (char*) strdup(name);
     /*strcpy(macros[macroCount - 1].name,name);*/
-    macros[macroCount - 1].content = strdup(content);
+    macros[macroCount - 1].content = (char*) strdup(content);
     /*strcpy(macros[macroCount - 1].content,content);*/
     if (macros[macroCount - 1].name == NULL || macros[macroCount - 1].content == NULL)
     {
