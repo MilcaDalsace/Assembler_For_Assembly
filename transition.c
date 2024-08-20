@@ -20,7 +20,6 @@ void firstPass(const char *sourceFilename)
     char lineToCheck[MAX_LINE_LENGTH];
     int uncorrect = 0;
     int countLine = 0;
-    char code[CODE_SEGMENT_SIZE];
     char *newSymbolName = NULL;
 
     while (fgets(line, MAX_LINE_LENGTH, sourceFile))
@@ -128,7 +127,6 @@ void secondPass(const char *sourceFilename)
     char lineToCheck[MAX_LINE_LENGTH];
     int uncorrect = 0;
     int countLine = 0;
-    char code[CODE_SEGMENT_SIZE];
     char *newSymbolName = NULL;
     int countAdress = 0;
 

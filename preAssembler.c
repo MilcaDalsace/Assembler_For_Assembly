@@ -83,6 +83,7 @@ void processFile(const char *inputFilename)
     else
     {
         regetError("Error: file name is incorrect.", NULL, NULL);
+        return;
     }
     strcat(outputFilename, ".am");
 
