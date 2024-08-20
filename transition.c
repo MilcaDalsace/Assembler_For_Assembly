@@ -20,7 +20,7 @@ void firstPass(const char *sourceFilename)
     char lineToCheck[MAX_LINE_LENGTH];
     int uncorrect = 0;
     int countLine = 0;
-    char code[CODE_SEGMENT_SIZE];
+    char codeBin[CODE_SEGMENT_SIZE];
     char *newSymbolName = NULL;
 
     while (fgets(line, MAX_LINE_LENGTH, sourceFile))
@@ -128,7 +128,7 @@ void secondPass(const char *sourceFilename)
     char lineToCheck[MAX_LINE_LENGTH];
     int uncorrect = 0;
     int countLine = 0;
-    char code[CODE_SEGMENT_SIZE];
+    char codeBin[CODE_SEGMENT_SIZE];
     char *newSymbolName = NULL;
     int countAdress = 0;
 
@@ -237,7 +237,7 @@ void buildOutputFiles(const char *sourceFilename)
     for (int i = 0; i < symbolCount; i++)
     {
         Symbol *sym = &symbols[i];
-        int codeInDecimal = binaryToDecimal(sym->code);
+        int codeBinInDecimal = binaryToDecimal(sym->code);
         fprintf(obFile, "%04d \t %05o \n", sym->address, codeInDecimal);
        /* fprintf(obFile, "%s\n", sym->code); check the  binary code*/
         if (sym->isExtern)
