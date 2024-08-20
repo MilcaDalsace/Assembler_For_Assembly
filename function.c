@@ -302,8 +302,9 @@ int updateOparand(const char *line, int countLine, int countAdress)
 
 char *changeNameOfFile(const char *sourceFileName, const char *fileNameEnding)
 {
+      char *updateFileName = malloc(MAX_LINE_LENGTH); // הקצאת זיכרון דינמית
+ 
     char *dot = strrchr(sourceFileName, '.');
-    char updateFileName[MAX_LINE_LENGTH];
     strcpy(updateFileName, sourceFileName);
     dot = strrchr(updateFileName, '.');
     if (dot != NULL)
