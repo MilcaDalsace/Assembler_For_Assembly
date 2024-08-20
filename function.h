@@ -133,3 +133,5 @@ int isCorrectString(const char *name);
 
 /*check if the datas write correct*/
 int correctCommas(char *line);
+
+void freeMemory();

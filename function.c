@@ -909,3 +909,26 @@ int correctCommas(char *str)
     /* אם המחרוזת נגמרת במצב של ציפייה לאובייקט חדש, סימן שהיה פסיק מיותר בסוף*/
     return 1;
 }
+
+/*The function frees the defined memory*/
+void freeMemory(){
+    int i;
+    for (i = 0; i < macroCount; i++)
+    {
+        free(macros[i].name);
+        free(macros[i].content);
+    }
+    free(macros);
+    /* Free allocated memory*/
+    for (i = 0; i < symbolCount; i++)
+    {
+        free(symbolTable[i].name);
+    }
+    free(symbolTable);
+    for (i = 0; i < externCount; i++)
+    {
+        free(externs[i].name);
+    }
+    free(externs);
+    free(symbols);
+}

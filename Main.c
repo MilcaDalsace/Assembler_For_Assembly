@@ -21,28 +21,6 @@ int numFileIsCoorect(int argc, char *argv[])
         return 1;
 }
 
-void freeMemory(){
-    int i;
-    for (i = 0; i < macroCount; i++)
-    {
-        free(macros[i].name);
-        free(macros[i].content);
-    }
-    free(macros);
-    /* Free allocated memory*/
-    for (i = 0; i < symbolCount; i++)
-    {
-        free(symbolTable[i].name);
-    }
-    free(symbolTable);
-    for (i = 0; i < externCount; i++)
-    {
-        free(externs[i].name);
-    }
-    free(externs);
-    free(symbols);
-}
-
 int main(int argc, char *argv[])
 {
     if (numFileIsCoorect(argc, argv))
