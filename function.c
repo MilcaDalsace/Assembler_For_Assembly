@@ -224,7 +224,7 @@ int addOperation(const char *line, int numOper, int countLine, const char *newSy
         lineCopy = NULL;
     }
 
-    if ((!line) || lineCopy && correctCommas(lineCopy))
+    if ((!line) || (lineCopy && correctCommas(lineCopy)))
     {
         if (numOper < 5)
         { /* The first group of instructions - receives 2 operands*/
@@ -549,7 +549,7 @@ char *findsMethodOfAddressing(const char *operand)
         if (operand[0] == '#')
         { /* a number*/
             if (!isNumber(operand + 1))
-                return NULL; /*!
+                return NULL; /*!*/
             return strdup(IMMEDIATE_ADDRESS);
         }
         else if (findLabbel(operand) + 1)
@@ -594,7 +594,7 @@ char *miunOperation(int num, const char *operand1, const char *operand2)
 /* Miun operand*/
 char *miunOperand(const char *operand, int firstOperand)
 {
-    static char code[CODE_SEGMENT_SIZE];
+    static char codeBin[CODE_SEGMENT_SIZE];
     char address[CODE_EE_SIZE];
     char addressingMethod[CODE_SIZE];
     char are[ARE_SIZE];
