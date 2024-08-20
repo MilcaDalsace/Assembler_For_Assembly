@@ -7,6 +7,7 @@
 
 Macro *macros = NULL;
 int macroCount = 0;
+extern char* strdup(const char*);
 
 /* יצירת מקרו חדש והוספתו לרשימת המקרוים*/
 void addMacro(const char *name, const char *content)

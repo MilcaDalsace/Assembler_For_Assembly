@@ -18,6 +18,8 @@ const char ZERO[] = "0000";
 const char NOT_FOUND[] = "labbelnotfound!";
 const int registers[] = {8, 7, 6, 5, 4, 3, 2, 1};
 
+extern char* strdup(const char*);
+
 Symbol *symbols = NULL;
 int symbolCount = 0;
 
