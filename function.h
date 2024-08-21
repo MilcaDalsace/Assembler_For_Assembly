@@ -100,7 +100,7 @@ char* miunTwoRegister(const char *operand1, const char *operand2);
 void addSymbol(const char *symbolName, const char *externName, const char *code, const int isData, const int isEntry, const int isExtern);
 
 /*add labbel*/
-void addLabbel(const char *name, const int count);
+void addLabel(const char *name, const int count);
 
 /*add extern*/
 void addExtern(const char *name);
@@ -112,7 +112,7 @@ void addL(int counteLine, int wordCounter);
 char* labelDefinition(const char *token);
 
 /*find labbel*/
-int findLabbel(const char *token);
+int findLabel(const char *token);
 
 /*find extern*/
 char* findExtern(const char *externName);

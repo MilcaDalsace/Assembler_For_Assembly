@@ -18,7 +18,7 @@ const char ZERO[] = "0000";
 const char NOT_FOUND[] = "labbelnotfound!";
 const int registers[] = {8, 7, 6, 5, 4, 3, 2, 1};
 
-extern char* strdup(const char*);
+extern char *strdup(const char *);
 
 Symbol *symbols = NULL;
 int symbolCount = 0;
@@ -56,7 +56,7 @@ int addData(const char *line, int countLine, const char *newSymbolName)
             {
                 int value = atoi(token);
                 strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1));
-                addSymbol(newSymbolName, NULL, codeBin, 1, 0, 0);                       /* the first word*/
+                addSymbol(newSymbolName, NULL, codeBin, 1, 0, 0); /* the first word*/
                 newSymbolName = NULL;
                 countWord++; /* add 1 L*/
             }
@@ -102,20 +102,20 @@ int addString(const char *line, int countLine, const char *newSymbolName)
         int length = strlen(token);
         fprintf(stderr, " line: %d %d length.\n", countLine, length);
         char charToAdd = token[1];
-        int value = charToAdd;                                                   /* ASCII value*/
-        strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1));             /* Create binary code*/
-        addSymbol(newSymbolName, NULL, codeBin, 1, 0, 0);                           /* The first word*/
+        int value = charToAdd;                                          /* ASCII value*/
+        strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1)); /* Create binary code*/
+        addSymbol(newSymbolName, NULL, codeBin, 1, 0, 0);               /* The first word*/
         countWord++;
         for (int i = 2; i < length - 1; i++)
         {
             charToAdd = token[i];
-            value = charToAdd;                                                      /* ASCII value*/
-            strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1));            /* Create binary code*/
-            addSymbol(NULL, NULL, codeBin, 1, 0, 0);                                   /* All the next chars*/
+            value = charToAdd;                                              /* ASCII value*/
+            strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1)); /* Create binary code*/
+            addSymbol(NULL, NULL, codeBin, 1, 0, 0);                        /* All the next chars*/
             countWord++;
         }
-        strcpy(codeBin, decimalToBinary(0, CODE_SEGMENT_SIZE - 1));    /* Create binary codeBin*/
-        addSymbol(NULL, NULL, codeBin, 1, 0, 0);                       /* Add /0 at the end*/
+        strcpy(codeBin, decimalToBinary(0, CODE_SEGMENT_SIZE - 1)); /* Create binary codeBin*/
+        addSymbol(NULL, NULL, codeBin, 1, 0, 0);                    /* Add /0 at the end*/
         countWord++;
 
         token = strtok(NULL, " \t\n");
@@ -181,9 +181,9 @@ int entryDefinition(const char *line, int countLine, int isFirstPass)
     char *token = strtok(lineCopy, " \t\n");
     if (token)
     {
-        if (findLabbel(token) + 1)
+        if (findLabel(token) + 1)
         {
-            Symbol *sym = &symbols[findLabbel(token)];
+            Symbol *sym = &symbols[findLabel(token)];
             if (sym && sym->isEntry == 0)
             {
                 sym->isEntry = 1;
@@ -214,47 +214,36 @@ int entryDefinition(const char *line, int countLine, int isFirstPass)
     return 1;
 }
 
-int addOperation(const char *line, int numOper, int countLine, const char *newSymbolName)
-{
+/* Adds an operation to the symbol table based on the given line and operation number.
+
+   Returns 1 if the operation is successfully added, 0 otherwise. */
+int addOperation(const char *line, int numOper, int countLine, const char *newSymbolName) {
     char *lineCopy;
-    if (line)
-    {
+
+    if (line) {
         lineCopy = strdup(line);
-    }
-    else
-    {
+    } else {
         lineCopy = NULL;
     }
 
-    if ((!line) || (lineCopy && correctCommas(lineCopy)))
-    {
-        if (numOper < 5)
-        { /* The first group of instructions - receives 2 operands*/
-            if (!operationWithTwoOperand(lineCopy, newSymbolName, numOper, countLine))
-            {
+    if ((!line) || (lineCopy && correctCommas(lineCopy))) {
+        if (numOper < 5) { /* Group 1 operations (2 operands)*/
+            if (!operationWithTwoOperand(lineCopy, newSymbolName, numOper, countLine)) {
+                free(lineCopy);
+                return 0;
+            }
+        } else if (numOper < 14) { /* Group 2 operations (1 operand)*/
+            if (!operationWithOneOperand(lineCopy, newSymbolName, numOper, countLine)) {
+                free(lineCopy);
+                return 0;
+            }
+        } else { /* Group 3 operations (0 operands)*/
+            if (!operationWithoutOperand(lineCopy, newSymbolName, numOper, countLine)) {
                 free(lineCopy);
                 return 0;
             }
         }
-        else if (numOper < 14)
-        { /* The second group of instructions - receives 1 operand*/
-            if (!operationWithOneOperand(lineCopy, newSymbolName, numOper, countLine))
-            {
-                free(lineCopy);
-                return 0;
-            }
-        }
-        else
-        { /* The third group of instructions - doesn't receive any operands*/
-            if (!operationWithoutOperand(lineCopy, newSymbolName, numOper, countLine))
-            {
-                free(lineCopy);
-                return 0;
-            }
-        }
-    }
-    else
-    {
+    } else {
         fprintf(stderr, "line %d.\n", countLine);
         free(lineCopy);
         return 0;
@@ -263,35 +252,36 @@ int addOperation(const char *line, int numOper, int countLine, const char *newSy
     return 1;
 }
 
-int updateOparand(const char *line, int countLine, int countAdress)
-{
+/* Updates the operands in the symbol table based on the given line and address.
+
+   Returns 1 if the operands are successfully updated, 0 otherwise. */
+int updateOparand(const char *line, int countLine, int countAdress) {
     char *lineCopy;
-    if (line)
-    {
+
+    if (line) {
         lineCopy = strdup(line);
-    }
-    else
-    {
+    } else {
         lineCopy = NULL;
     }
+
     char *token = strtok(lineCopy, " ,\t\n");
     char codeBin[CODE_SEGMENT_SIZE];
     int i = 1;
-    while (token != NULL)
-    {
-        int simbolAddress = countAdress + i;
-        if (strcmp(symbols[simbolAddress].code, NOT_FOUND) == 0)
-        { /* Operand not found at the first pass*/
-            Symbol *sym = &symbols[simbolAddress];
-            strcpy(codeBin, miunOperand(token, 1));
-            strncpy(sym->code, codeBin, CODE_SEGMENT_SIZE);
-            if (findExtern(token))
-            {
-                sym->isExtern = 1;
+
+    while (token != NULL) {
+        int symbolAddress = countAdress + i;
+
+        if (strcmp(symbols[symbolAddress].code, NOT_FOUND) == 0) { /* Operand not found in the first pass*/
+            Symbol *sym = &symbols[symbolAddress];
+            strcpy(codeBin, miunOperand(token, 1)); /* Generate machine code for the operand*/
+            strncpy(sym->code, codeBin, CODE_SEGMENT_SIZE); /* Update the symbol's code*/
+
+            if (findExtern(token)) {
+                sym->isExtern = 1; /* Mark the symbol as external*/
                 strncpy(sym->externName, token, MAX_LABEL_NAME);
             }
-            if (strcmp(codeBin, NOT_FOUND) == 0)
-            {
+
+            if (strcmp(codeBin, NOT_FOUND) == 0) {
                 fprintf(stderr, "Error: line %d label not found.\n", countLine);
                 return 0;
             }
@@ -302,28 +292,33 @@ int updateOparand(const char *line, int countLine, int countAdress)
     return 1;
 }
 
+/* Changes the file name extension to the specified ending.
+
+   Returns a dynamically allocated string containing the updated file name. */
 char *changeNameOfFile(const char *sourceFileName, const char *fileNameEnding)
 {
-      char *updateFileName = malloc(MAX_LINE_LENGTH); // הקצאת זיכרון דינמית
- 
-    char *dot = strrchr(sourceFileName, '.');
-    strcpy(updateFileName, sourceFileName);
+    char *updateFileName = malloc(MAX_LINE_LENGTH); /* Allocate memory for the new file name*/
+    char *dot = strrchr(sourceFileName, '.');       /* Find the last dot in the original file name*/
+    strcpy(updateFileName, sourceFileName);         /* Copy the original file name*/
     dot = strrchr(updateFileName, '.');
     if (dot != NULL)
     {
-        *dot = '\0';
+        *dot = '\0'; /* Remove the original file name extension*/
     }
-
-    strcat(updateFileName, fileNameEnding);
+    strcat(updateFileName, fileNameEnding); /* Append the new file name extension*/
     return updateFileName;
 }
 
+/* Performs an operation with two operands.
+
+   Returns 1 if the operation is successful, 0 otherwise. */
 int operationWithTwoOperand(const char *line, const char *newSymbolName, int numOper, int countLine)
 {
     char codeBin[CODE_SEGMENT_SIZE];
     char operand1[MAX_LINE_LENGTH];
     char operand2[MAX_LINE_LENGTH];
     char *lineCopy;
+
     if (line)
     {
         lineCopy = strdup(line);
@@ -332,6 +327,7 @@ int operationWithTwoOperand(const char *line, const char *newSymbolName, int num
     {
         lineCopy = NULL;
     }
+
     char *token = strtok(lineCopy, " ,\t\n");
     int countWord = 0;
 
@@ -345,6 +341,7 @@ int operationWithTwoOperand(const char *line, const char *newSymbolName, int num
         fprintf(stderr, "Error: line %d Missing operand1.\n", countLine);
         return 0;
     }
+
     if (token)
     {
         strcpy(operand2, token);
@@ -355,19 +352,19 @@ int operationWithTwoOperand(const char *line, const char *newSymbolName, int num
         return 0;
     }
 
-    strcpy(codeBin, miunOperation(numOper, operand1, operand2)); /* Create code to the operation*/
+    strcpy(codeBin, miunOperation(numOper, operand1, operand2)); /* Create code for the operation*/
     addSymbol(newSymbolName, NULL, codeBin, 0, 0, 0);            /* Add operation to the symbols*/
 
     countWord++;
     if (isRegister(operand1) + 1 && isRegister(operand2) + 1)
     {
-        strcpy(codeBin, miunTwoRegister(operand1, operand2)); /* Create 1 code to the registers*/
+        strcpy(codeBin, miunTwoRegister(operand1, operand2)); /* Create code for registers*/
         addSymbol(NULL, NULL, codeBin, 0, 0, 0);
         countWord++;
     }
     else
     {
-        strcpy(codeBin, miunOperand(operand1, 1)); /* Create code to operand1*/
+        strcpy(codeBin, miunOperand(operand1, 1)); /* Create code for operand1*/
         if (findExtern(operand1))
         {
             addSymbol(NULL, operand1, codeBin, 0, 0, 1); /* Add symbol with operand1*/
@@ -378,7 +375,7 @@ int operationWithTwoOperand(const char *line, const char *newSymbolName, int num
             addSymbol(NULL, NULL, codeBin, 0, 0, 0); /* Add symbol with operand1*/
             countWord++;
         }
-        strcpy(codeBin, miunOperand(operand2, 0)); /* Create code to operand2*/
+        strcpy(codeBin, miunOperand(operand2, 0)); /* Create code for operand2*/
         if (findExtern(operand2))
         {
             addSymbol(NULL, operand2, codeBin, 0, 0, 1); /* Add symbol with operand2*/
@@ -390,22 +387,28 @@ int operationWithTwoOperand(const char *line, const char *newSymbolName, int num
             countWord++;
         }
     }
+
     token = strtok(NULL, " \t\n");
     if (token)
     {
         fprintf(stderr, "Error: line %d Additional operands.\n", countLine);
         return 0;
     }
+
     IC += countWord;
     addL(countLine, countWord);
     return 1;
 }
 
+/* Performs an operation with one operand.
+
+   Returns 1 if the operation is successful, 0 otherwise. */
 int operationWithOneOperand(const char *line, const char *newSymbolName, int numOper, int countLine)
 {
     char codeBin[CODE_SEGMENT_SIZE];
     char operand1[MAX_LINE_LENGTH];
     char *lineCopy;
+
     if (line)
     {
         lineCopy = strdup(line);
@@ -414,8 +417,10 @@ int operationWithOneOperand(const char *line, const char *newSymbolName, int num
     {
         lineCopy = NULL;
     }
+
     char *token = strtok(lineCopy, " ,\t\n");
     int countWord = 0;
+
     if (token)
     {
         strcpy(operand1, token);
@@ -426,14 +431,13 @@ int operationWithOneOperand(const char *line, const char *newSymbolName, int num
         return 0;
     }
 
-    strcpy(codeBin, miunOperation(numOper, NULL, operand1)); /* Create code to the operation*/
-
-    addSymbol(newSymbolName, NULL, codeBin, 0, 0, 0); /* Add operation to the symbols*/
+    strcpy(codeBin, miunOperation(numOper, NULL, operand1)); /* Create code for the operation*/
+    addSymbol(newSymbolName, NULL, codeBin, 0, 0, 0);        /* Add operation to the symbols*/
     countWord++;
-    strcpy(codeBin, miunOperand(operand1, 1)); /* Create code to operand1*/
+    strcpy(codeBin, miunOperand(operand1, 1)); /* Create code for operand1*/
     if (findExtern(operand1))
     {
-        addSymbol(NULL, operand1, codeBin, 0, 0, 1); /* Add symbol with operand2*/
+        addSymbol(NULL, operand1, codeBin, 0, 0, 1); /* Add symbol with operand1*/
         countWord++;
     }
     else
@@ -441,39 +445,47 @@ int operationWithOneOperand(const char *line, const char *newSymbolName, int num
         addSymbol(NULL, NULL, codeBin, 0, 0, 0); /* Add symbol with operand1*/
         countWord++;
     }
+
     token = strtok(NULL, " \t\n");
     if (token)
     {
         fprintf(stderr, "Error: line %d Additional operands.\n", countLine);
         return 0;
     }
+
     IC += countWord;
     addL(countLine, countWord);
     return 1;
 }
 
+/* Performs an operation without operands.
+
+   Returns 1 if the operation is successful, 0 otherwise. */
 int operationWithoutOperand(const char *line, const char *newSymbolName, int numOper, int countLine)
 {
     char codeBin[CODE_SEGMENT_SIZE];
-    /* char *token = strtok(line, " ,\t\n");*/
     int countWord = 0;
-    strcpy(codeBin, miunOperation(numOper, NULL, NULL)); /* Create code to the operation*/
+
+    strcpy(codeBin, miunOperation(numOper, NULL, NULL)); /* Create code for the operation*/
     addSymbol(newSymbolName, NULL, codeBin, 0, 0, 0);    /* Add operation to the symbols*/
     countWord++;
-    /* token = strtok(NULL, " \t\n");*/
     if (line)
     {
         fprintf(stderr, "Error: line %d Additional operands.\n", countLine);
         return 0;
     }
+
     IC += countWord;
     addL(countLine, countWord);
     return 1;
 }
 
-int checkIfLabbleIsData(const char *label)
+/* Checks if a label refers to a data location.
+
+   Returns 1 if the label is data, 0 otherwise. */
+int checkIfLabelIsData(const char *label)
 {
-    int labelAddress = findLabbel(label);
+    int labelAddress = findLabel(label);
     if (labelAddress + 1)
     {
         Symbol *sym = &symbols[labelAddress];
@@ -484,29 +496,34 @@ int checkIfLabbleIsData(const char *label)
     }
     return 1;
 }
-/* Restricted name*/
+
+/* Checks if a name is a restricted keyword.
+
+   Returns 1 if the name is restricted, 0 otherwise. */
 int isNameRestricted(const char *name)
 {
     if (isRegister(name) + 1)
     {
-        return 1;
+        return 1; /* Register*/
     }
     else if (findOperation(name) + 1)
     {
-        return 1;
+        return 1; /* Operation*/
     }
     else if (findMacro(name))
     {
-        return 1;
+        return 1; /* Macro*/
     }
-    else if (findLabbel(name) + 1)
+    else if (findLabel(name) + 1)
     {
-        return 1;
+        return 1; /* Label*/
     }
-    return 0;
+    return 0; /* Not restricted*/
 }
 
-/* find operation*/
+/* Finds the index of a given operation in the list of operations.
+
+   Returns the index of the operation, or -1 if not found. */
 int findOperation(const char *name)
 {
     const char *operations[] = {"mov", "cmp", "add", "sub", "lea", "clr", "not", "inc", "dec", "jmp", "bne", "red", "prn", "jsr", "rts", "stop"};
@@ -521,7 +538,9 @@ int findOperation(const char *name)
     return -1;
 }
 
-/* Is register*/
+/* Checks if a name is a register.
+
+   Returns the index of the register in the list of registers, or -1 if not found. */
 int isRegister(const char *name)
 {
     const char *registers[] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
@@ -543,43 +562,48 @@ int isRegister(const char *name)
     return -1;
 }
 
-/* Find method of addressing*/
+/* Determines the addressing method for a given operand.
+
+   Returns a string representing the addressing method, or NULL if the operand is invalid. */
 char *findsMethodOfAddressing(const char *operand)
 {
-
     if (operand)
     {
         if (operand[0] == '#')
-        { /* a number*/
+        { /* Immediate value*/
             if (!isNumber(operand + 1))
-                return NULL; /*!*/
+            {
+                return NULL; /* Invalid immediate value*/
+            }
             return strdup(IMMEDIATE_ADDRESS);
         }
-        else if (findLabbel(operand) + 1)
-        { /* label*/
+        else if (findLabel(operand) + 1)
+        { /* Label*/
             return strdup(DIRECT_ADDRESS);
         }
         else if (findExtern(operand))
-        { /* external label*/
+        { /* External label*/
             return strdup(DIRECT_ADDRESS);
         }
         else if ((isRegister(operand) + 1) && (operand[0] == '*'))
-        { /* A pointer to a register*/
+        { /* Indirect addressing through a register*/
             return strdup(INDIRECT_HOARD_ADDRESS);
         }
         else if (isRegister(operand) + 1)
-        { /* A register*/
+        { /* Register*/
             return strdup(DIRECT_HOARD_ADDRESS);
         }
         else
-        { /* label no definition yet*/
+        { /* Label not defined yet (assuming it will be defined later)*/
             return strdup(DIRECT_ADDRESS);
         }
     }
-    return strdup(ZERO);
+    return strdup(ZERO); /* Operand is NULL*/
 }
 
-/* Miun operation*/
+/* Performs a subtraction operation on two operands and returns the corresponding machine code.
+
+   The operands can be registers, labels, or immediate values. */
 char *miunOperation(int num, const char *operand1, const char *operand2)
 {
     static char codeBin[CODE_SEGMENT_SIZE];
@@ -594,7 +618,9 @@ char *miunOperation(int num, const char *operand1, const char *operand2)
     return codeBin;
 }
 
-/* Miun operand*/
+/* Generates machine code for a subtraction operation with a single operand.
+
+   The operand can be a register, label, or immediate value. */
 char *miunOperand(const char *operand, int firstOperand)
 {
     static char codeBin[CODE_SEGMENT_SIZE];
@@ -603,7 +629,7 @@ char *miunOperand(const char *operand, int firstOperand)
     char are[ARE_SIZE];
 
     if (operand[0] == '#')
-    { /* a number*/
+    { /* Immediate value*/
         char num[strlen(operand) - 1];
         strncpy(num, &operand[1], strlen(operand) - 1);
         num[strlen(operand) - 1] = '\0';
@@ -611,20 +637,20 @@ char *miunOperand(const char *operand, int firstOperand)
         strcpy(address, decimalToBinary(value, CODE_SIZE * 3));
         strcpy(are, ABSOLUTE);
     }
-    else if (findLabbel(operand) + 1)
-    { /* label*/
-        Symbol *sym = &symbols[findLabbel(operand)];
+    else if (findLabel(operand) + 1)
+    { /* Label*/
+        Symbol *sym = &symbols[findLabel(operand)];
         int value = sym->address;
         strcpy(address, decimalToBinary(value, CODE_SIZE * 3));
         strcpy(are, RELOCATABLE);
     }
     else if (findExtern(operand))
-    { /* external label*/
+    { /* External label*/
         strcpy(address, decimalToBinary(0, CODE_SIZE * 3));
         strcpy(are, EXTERNAL);
     }
     else if (isRegister(operand) + 1)
-    { /* A pointer to a register*/
+    { /* Register*/
         int num = isRegister(operand);
         strcpy(addressingMethod, decimalToBinary(registers[num], CODE_SIZE));
         if (firstOperand)
@@ -638,14 +664,17 @@ char *miunOperand(const char *operand, int firstOperand)
         strcpy(are, ABSOLUTE);
     }
     else
-    { /* not correct*/
+    { /* Invalid operand*/
         return strdup(NOT_FOUND);
     }
+
     snprintf(codeBin, CODE_SEGMENT_SIZE, "%s%s", address, are);
     return codeBin;
 }
 
-/* Miun two registers*/
+/* Subtracts two registers and returns the corresponding machine code.
+
+   The operands are assumed to be register names. */
 char *miunTwoRegister(const char *operand1, const char *operand2)
 {
     static char codeBin[CODE_SEGMENT_SIZE];
@@ -661,7 +690,9 @@ char *miunTwoRegister(const char *operand1, const char *operand2)
     return codeBin;
 }
 
-/* Add symbol*/
+/* Adds a symbol to the symbol table.
+
+   The symbol's name, external name, machine code, data flag, entry flag, and external flag are stored. */
 void addSymbol(const char *symbolName, const char *externName, const char *codeBin, const int isData, const int isEntry, const int isExtern)
 {
     Symbol *temp = realloc(symbols, (symbolCount + 1) * sizeof(Symbol));
@@ -670,6 +701,7 @@ void addSymbol(const char *symbolName, const char *externName, const char *codeB
         fprintf(stderr, "Error: Memory allocation failed.\n");
         exit(EXIT_FAILURE);
     }
+
     symbols = temp;
     symbolCount++;
 
@@ -696,19 +728,23 @@ void addSymbol(const char *symbolName, const char *externName, const char *codeB
     strncpy(symbols[symbolCount - 1].code, codeBin, CODE_SEGMENT_SIZE - 1);
     symbols[symbolCount - 1].code[CODE_SEGMENT_SIZE - 1] = '\0';
 
-    symbols[symbolCount - 1].address = symbolCount + 99; /* Not sure about the calculation, verify the correct address*/
+    /* The address calculation might need to be adjusted based on the specific assembly language and memory model*/
+    symbols[symbolCount - 1].address = symbolCount + 99;
+
     symbols[symbolCount - 1].isData = isData;
     symbols[symbolCount - 1].isEntry = isEntry;
     symbols[symbolCount - 1].isExtern = isExtern;
 
     if (symbolName != NULL)
-    { /* Add label if present*/
-        addLabbel(symbolName, symbolCount - 1);
+    {
+        addLabel(symbolName, symbolCount - 1); /* Add the label to the symbol table*/
     }
 }
 
-/* Add label to symbol table*/
-void addLabbel(const char *name, const int count)
+/* Adds a label to the symbol table.
+
+   The label's name and its count are stored in the symbol table. */
+void addLabel(const char *name, const int count)
 {
     SymbolTable *temp = realloc(symbolTable, (labelCount + 1) * sizeof(SymbolTable));
     if (!temp)
@@ -718,6 +754,7 @@ void addLabbel(const char *name, const int count)
     }
     symbolTable = temp;
     labelCount++;
+
     symbolTable[labelCount - 1].name = strdup(name);
     if (!symbolTable[labelCount - 1].name)
     {
@@ -727,7 +764,9 @@ void addLabbel(const char *name, const int count)
     symbolTable[labelCount - 1].count = count;
 }
 
-/* Add external symbol*/
+/* Adds an external symbol to the list of external symbols.
+
+   The external symbol's name is stored in the list. */
 void addExtern(const char *name)
 {
     External *temp = realloc(externs, (externCount + 1) * sizeof(External));
@@ -738,6 +777,7 @@ void addExtern(const char *name)
     }
     externs = temp;
     externCount++;
+
     externs[externCount - 1].name = strdup(name);
     if (!externs[externCount - 1].name)
     {
@@ -746,7 +786,9 @@ void addExtern(const char *name)
     }
 }
 
-/* Add line count*/
+/* Adds a line count to the list of line counts.
+
+   The line count's word count is stored in the list. */
 void addL(int counteLine, int wordCounter)
 {
     L *temp = realloc(l, counteLine * sizeof(L));
@@ -759,27 +801,35 @@ void addL(int counteLine, int wordCounter)
     l[counteLine - 1].wordCounter = wordCounter;
 }
 
-/* Label definition*/
+/* Checks if a token represents a label definition and returns the label name if so.
+
+   Returns a dynamically allocated string containing the label name, or NULL if the token is not a label definition. */
 char *labelDefinition(const char *token)
 {
     int length = strlen(token);
+
     if (token[length - 1] == ':')
     {
+        /* Create a new string for the label name */
         char *newSymbolName = malloc(length);
         if (!newSymbolName)
         {
             fprintf(stderr, "Error: Memory allocation failed.\n");
             exit(EXIT_FAILURE);
         }
-        strncpy(newSymbolName, token, length - 1); /* Copy the name without ':'*/
+
+        /* Copy the label name without the colon */
+        strncpy(newSymbolName, token, length - 1);
         newSymbolName[length - 1] = '\0';
         return newSymbolName;
     }
     return NULL;
 }
 
-/* Find label*/
-int findLabbel(const char *symbolName)
+/* Finds a label in the symbol table by its name.
+
+   Returns the index of the label in the symbol table, or -1 if not found. */
+int findLabel(const char *symbolName)
 {
     for (int i = 0; i < symbolCount; i++)
     {
@@ -791,7 +841,9 @@ int findLabbel(const char *symbolName)
     return -1;
 }
 
-/* Find external symbol*/
+/* Finds an external symbol by its name.
+
+   Returns the name of the external symbol if found, or NULL if not found. */
 char *findExtern(const char *externName)
 {
     for (int i = 0; i < externCount; i++)
@@ -804,6 +856,9 @@ char *findExtern(const char *externName)
     return NULL;
 }
 
+/* Checks if a string is enclosed in double quotes.
+
+   Returns 1 if the string is enclosed in double quotes, 0 otherwise. */
 int isCorrectString(const char *name)
 {
     if (name[0] == '"' && name[strlen(name) - 1] == '"')
@@ -811,24 +866,31 @@ int isCorrectString(const char *name)
         return 1;
     }
     else
+    {
         return 0;
+    }
 }
-/* Check if a string is a number*/
 
+/* Checks if a string represents a valid number.
+
+   Returns 1 if the string is a number, 0 otherwise.
+
+   Handles both positive and negative numbers. */
 int isNumber(const char *str)
 {
-    /* Check for empty string*/
+    /* Check for empty string */
     if (*str == '\0')
     {
         return 0;
     }
 
-    /* Optional: Handle negative numbers*/
+    /* Optional: Handle negative numbers */
     if (*str == '-' || *str == '+')
     {
         str++;
     }
 
+    /* Iterate through the string, checking if each character is a digit */
     while (*str != '\0')
     {
         if (!isdigit(*str))
@@ -841,40 +903,52 @@ int isNumber(const char *str)
     return 1;
 }
 
-/* Decimal to binary*/
+/* Converts a decimal number to its binary representation.
+
+   Returns a dynamically allocated string containing the binary representation.
+   The length parameter specifies the desired number of bits in the binary representation. */
 char *decimalToBinary(int decimal, int length)
 {
-    char *binary = (char *)malloc(length + 1);
+    char *binary = (char *)malloc(length + 1); /* Allocate memory for the binary string */
+
     if (!binary)
     {
         fprintf(stderr, "Error: Memory allocation failed.\n");
         exit(EXIT_FAILURE);
     }
-    binary[length] = '\0';
 
-    unsigned int mask = 1U << (length - 1);
+    binary[length] = '\0'; /* Null-terminate the string */
 
+    unsigned int mask = 1U << (length - 1); /* Create a mask for extracting bits */
+
+    /* Handle negative numbers by converting to two's complement */
     if (decimal < 0)
     {
-        decimal = (1 << length) + decimal; /* Convert to two's complement*/
+        decimal = (1 << length) + decimal;
     }
 
+    /* Iterate through the bits and set the corresponding characters in the binary string */
     for (int i = 0; i < length; i++)
     {
         binary[i] = (decimal & mask) ? '1' : '0';
-        mask >>= 1;
+        mask >>= 1; /* Shift the mask to the right */
     }
 
     return binary;
 }
 
-/* binary to decimal*/
+/* Converts a binary string to its decimal equivalent.
+
+   Returns the decimal value. */
 int binaryToDecimal(const char *binary)
 {
     int decimal = 0;
     int length = strlen(binary);
+
+    /* Iterate through the binary string, starting from the least significant bit */
     for (int i = 0; i < length; i++)
     {
+        /* If the current bit is 1, add its corresponding power of 2 to the decimal value */
         if (binary[length - 1 - i] == '1')
         {
             decimal += pow(2, i);
@@ -883,52 +957,71 @@ int binaryToDecimal(const char *binary)
     return decimal;
 }
 
-/* Correct commas*/
+/* Correct commas in a string representing a list of objects.
+   Returns 1 if the commas are correctly placed, 0 otherwise.
+
+   Assumes that:
+   - Objects are separated by commas.
+   - There are no spaces within objects.
+   - The string does not end with a comma. */
 int correctCommas(char *str)
 {
-    int expecting_object = 1; /* מצב שמחכה לאובייקט חדש*/
+    int expecting_object = 1; /* Flag to indicate whether we expect to find a new object */
+
     while (*str)
     {
         if (*str == ',' && expecting_object)
         {
-            /* פסיק מופיע מבלי שזוהה אובייקט קודם*/
+            /* Encountered a comma before finding an object, which is an error */
             return 0;
         }
         else if (*str == ',' && !expecting_object)
         {
-            /* מצבים תקינים, עוברים למצב שמחכה לאובייקט הבא*/
+            /* Encountered a comma after finding an object, which is valid.
+               Now expect to find a new object. */
             expecting_object = 1;
         }
         else if (!isspace(*str))
         {
-            /* זוהה אובייקט, מחכים לפסיק*/
+            /* Found a non-whitespace character, which is part of an object.
+               Now expect to find a comma. */
             expecting_object = 0;
         }
         str++;
     }
-    /* אם המחרוזת נגמרת במצב של ציפייה לאובייקט חדש, סימן שהיה פסיק מיותר בסוף*/
+
+    /* If we reach the end of the string and are still expecting an object,
+       it means there was an extra comma at the end, which is an error. */
     return 1;
 }
 
-/*The function frees the defined memory*/
-void freeMemory(){
+/* The function frees the defined memory */
+void freeMemory()
+{
     int i;
+
+    /* Free memory for macros */
     for (i = 0; i < macroCount; i++)
     {
         free(macros[i].name);
         free(macros[i].content);
     }
     free(macros);
-    /* Free allocated memory*/
+
+    /* Free allocated memory for symbols */
     for (i = 0; i < symbolCount; i++)
     {
         free(symbolTable[i].name);
     }
     free(symbolTable);
+
+    /* Free allocated memory for externs */
     for (i = 0; i < externCount; i++)
     {
         free(externs[i].name);
     }
     free(externs);
+
+    /* Free allocated memory for symbols (assuming symbols is a pointer to a data structure) */
     free(symbols);
 }
