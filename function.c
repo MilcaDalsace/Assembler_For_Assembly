@@ -44,7 +44,8 @@ int addData(const char *line, int countLine, const char *newSymbolName)
     char *lineCopy;
     if (!line)
     {
-        fprintf(stderr, "Error: line %d Num is missing\n", countLine);
+        fprintf(stderr, "Error line %d: Num is missing\n", countLine);
+        return 0;
     }
     else
     {
@@ -64,7 +65,7 @@ int addData(const char *line, int countLine, const char *newSymbolName)
                 }
                 else
                 {
-                    fprintf(stderr, "Error: line %d %s not a number \n", countLine, token);
+                    fprintf(stderr, "Error line %d: %s not a number \n", countLine, token);
                     return 0;
                 }
                 token = strtok(NULL, ", \t\n");
@@ -72,7 +73,7 @@ int addData(const char *line, int countLine, const char *newSymbolName)
         }
         else
         {
-            fprintf(stderr, "Error: line %d Incorrect signs\n", countLine);
+            fprintf(stderr, "Error line %d: Incorrect signs\n", countLine);
             return 0;
         }
     }
@@ -90,50 +91,49 @@ int addString(const char *line, int countLine, const char *newSymbolName)
     char codeBin[CODE_SEGMENT_SIZE];
     char *lineCopy;
 
-    if (line)
+    if (!line)
     {
-        lineCopy = strdup(line);
-    }
-    else
-    {
-        lineCopy = NULL;
-    }
-
-    char *token = strtok(lineCopy, " \t\n");
-    if (isCorrectString(token) == 0)
-    {
-        fprintf(stderr, "Error: line %d Missing quotation marks.\n", countLine);
+        fprintf(stderr, "Error line %d: string is missing\n", countLine);
         return 0;
     }
     else
     {
-        int length = strlen(token);
-        char charToAdd = token[1];
-        int value = charToAdd;                                          /* ASCII value*/
-        strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1)); /* Create binary code*/
-        addSymbol(newSymbolName, NULL, codeBin, 1, 0, 0);               /* Add the first word*/
-        countWord++;
-
-        for (int i = 2; i < length - 1; i++)
+        lineCopy = strdup(line);
+        char *token = strtok(lineCopy, " \t\n");
+        if (isCorrectString(token) == 0)
         {
-            charToAdd = token[i];
-            value = charToAdd;                                              /* ASCII value*/
-            strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1)); /* Create binary code*/
-            addSymbol(NULL, NULL, codeBin, 1, 0, 0);                        /* Add the next character*/
-            countWord++;
-        }
-
-        strcpy(codeBin, decimalToBinary(0, CODE_SEGMENT_SIZE - 1)); /* Create binary code for the null terminator*/
-        addSymbol(NULL, NULL, codeBin, 1, 0, 0);                    /* Add the null terminator*/
-        countWord++;
-
-        token = strtok(NULL, " \t\n");
-        if (token)
-        {
-            fprintf(stderr, "Error: line %d Additional characters at the line.\n", countLine);
+            fprintf(stderr, "Error line %d: Missing quotation marks.\n", countLine);
             return 0;
         }
+        else
+        {
+            int length = strlen(token);
+            char charToAdd = token[1];
+            int value = charToAdd;                                          /* ASCII value*/
+            strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1)); /* Create binary code*/
+            addSymbol(newSymbolName, NULL, codeBin, 1, 0, 0);               /* Add the first word*/
+            countWord++;
 
+            for (int i = 2; i < length - 1; i++)
+            {
+                charToAdd = token[i];
+                value = charToAdd;                                              /* ASCII value*/
+                strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1)); /* Create binary code*/
+                addSymbol(NULL, NULL, codeBin, 1, 0, 0);                        /* Add the next character*/
+                countWord++;
+            }
+
+            strcpy(codeBin, decimalToBinary(0, CODE_SEGMENT_SIZE - 1)); /* Create binary code for the null terminator*/
+            addSymbol(NULL, NULL, codeBin, 1, 0, 0);                    /* Add the null terminator*/
+            countWord++;
+
+            token = strtok(NULL, " \t\n");
+            if (token)
+            {
+                fprintf(stderr, "Error line %d: Additional characters at the line.\n", countLine);
+                return 0;
+            }
+        }
         DC += countWord;
         addL(countLine, countWord);
         return 1;
@@ -147,38 +147,37 @@ int externDefinition(const char *line, int countLine)
 {
     char *remaining = strdup(line);
     char *lineCopy;
-
-    if (line)
+    if (!line)
+    {
+        fprintf(stderr, "Error line %d: extern is missing\n", countLine);
+        return 0;
+    }
+    else
     {
         lineCopy = strdup(line);
-    }
-    else
-    {
-        lineCopy = NULL;
-    }
-
-    if (remaining && correctCommas(remaining))
-    {
-        char *token = strtok(lineCopy, " \t\n");
-        while (token != NULL)
+        if (remaining && correctCommas(remaining))
         {
-            if (isNameRestricted(token))
+            char *token = strtok(lineCopy, " \t\n");
+            while (token != NULL)
             {
-                fprintf(stderr, "Error: line %d is restricted name\n", countLine);
-                return 0;
+                if (isNameRestricted(token))
+                {
+                    fprintf(stderr, "Error line %d:: %s is restricted name.\n", countLine, token);
+                    return 0;
+                }
+                else
+                {
+                    addExtern(token); /* Add the external symbol*/
+                    token = strtok(NULL, " \t\n");
+                }
             }
-            else
-            {
-                addExtern(token); /* Add the external symbol*/
-                token = strtok(NULL, " \t\n");
-            }
+            return 1;
         }
-        return 1;
-    }
-    else
-    {
-        fprintf(stderr, "Error: line %d the Extern definition is incorrect.\n", countLine);
-        return 0;
+        else
+        {
+            fprintf(stderr, "Error line %d: the Extern definition is incorrect.\n", countLine);
+            return 0;
+        }
     }
 }
 
@@ -188,44 +187,49 @@ int externDefinition(const char *line, int countLine)
 int entryDefinition(const char *line, int countLine, int isFirstPass)
 {
     char *lineCopy;
-
-    if (line)
+    if (!line)
     {
-        lineCopy = strdup(line);
+        fprintf(stderr, "Error line %d: extern is missing\n", countLine);
+        return 0;
     }
     else
     {
-        lineCopy = NULL;
-    }
-
-    char *token = strtok(lineCopy, " \t\n");
-    if (token)
-    {
-        if (findLabel(token) + 1)
+        lineCopy = strdup(line);
+        char *token = strtok(lineCopy, " \t\n");
+        if (token)
         {
-            Symbol *sym = &symbols[findLabel(token)];
-            if (sym && sym->isEntry == 0)
+            if (findLabel(token) + 1)
             {
-                sym->isEntry = 1; /* Mark the symbol as an entry point*/
+                Symbol *sym = &symbols[findLabel(token)];
+                if (sym && sym->isEntry == 0)
+                {
+                    sym->isEntry = 1; /* Mark the symbol as an entry point*/
+                }
+            }
+            else if (isFirstPass == 0)
+            { /* Check for label existence only in the second pass*/
+                fprintf(stderr, "Error line %d: label not exist.\n", countLine);
+                return 0;
+            }
+
+            token = strtok(NULL, " \t\n");
+            if (token)
+            {
+                fprintf(stderr, "Error line %d: Additional characters at the line.\n", countLine);
+                return 0;
             }
         }
-        else if (isFirstPass == 0)
-        { /* Check for label existence only in the second pass*/
-            fprintf(stderr, "Error: line %d label not exist.\n", countLine);
+        else
+        {
+            fprintf(stderr, "Error line %d: Label name is missing.\n", countLine);
             return 0;
         }
-
         token = strtok(NULL, " \t\n");
         if (token)
         {
-            fprintf(stderr, "Error: line %d Additional characters at the line.\n", countLine);
+            fprintf(stderr, "Error line %d: Additional characters at the line.\n", countLine);
             return 0;
         }
-    }
-    else
-    {
-        fprintf(stderr, "Error: line %d Label name is missing.\n", countLine);
-        return 0;
     }
 
     return 1;
@@ -276,7 +280,7 @@ int addOperation(const char *line, int numOper, int countLine, const char *newSy
     }
     else
     {
-        fprintf(stderr, "line %d.\n", countLine);
+        fprintf(stderr, "line %d:.\n", countLine);
         free(lineCopy);
         return 0;
     }
@@ -322,7 +326,7 @@ int updateOparand(const char *line, int countLine, int countAdress)
 
             if (strcmp(codeBin, NOT_FOUND) == 0)
             {
-                fprintf(stderr, "Error: line %d label not found.\n", countLine);
+                fprintf(stderr, "Error line %d: label not found.\n", countLine);
                 return 0;
             }
         }
@@ -378,7 +382,7 @@ int operationWithTwoOperand(const char *line, const char *newSymbolName, int num
     }
     else
     {
-        fprintf(stderr, "Error: line %d Missing operand1.\n", countLine);
+        fprintf(stderr, "Error line %d: Missing operand1.\n", countLine);
         return 0;
     }
 
@@ -388,18 +392,12 @@ int operationWithTwoOperand(const char *line, const char *newSymbolName, int num
     }
     else
     {
-        fprintf(stderr, "Error: line %d Missing operand2.\n", countLine);
+        fprintf(stderr, "Error line %d: Missing operand2.\n", countLine);
         return 0;
     }
     strcpy(codeBin, miunOperation(numOper, operand1, operand2)); /* Create code for the operation*/
     addSymbol(newSymbolName, NULL, codeBin, 0, 0, 0);            /* Add operation to the symbols*/
-
     countWord++;
-    if (!instructionOperandIsCorrect(numOper, operand1, operand2))
-    {
-        fprintf(stderr, "Error: line %d The type of the operand does not match the type of the operation.\n", countLine);
-        return 0;
-    }
     if (isRegister(operand1) + 1 && isRegister(operand2) + 1)
     {
         strcpy(codeBin, miunTwoRegister(operand1, operand2)); /* Create code for registers*/
@@ -435,7 +433,7 @@ int operationWithTwoOperand(const char *line, const char *newSymbolName, int num
     token = strtok(NULL, " \t\n");
     if (token)
     {
-        fprintf(stderr, "Error: line %d Additional operands.\n", countLine);
+        fprintf(stderr, "Error line %d: Additional operands.\n", countLine);
         return 0;
     }
 
@@ -471,7 +469,7 @@ int operationWithOneOperand(const char *line, const char *newSymbolName, int num
     }
     else
     {
-        fprintf(stderr, "Error: line %d Missing operand.\n", countLine);
+        fprintf(stderr, "Error line %d: Missing operand.\n", countLine);
         return 0;
     }
 
@@ -498,7 +496,7 @@ int operationWithOneOperand(const char *line, const char *newSymbolName, int num
     token = strtok(NULL, " \t\n");
     if (token)
     {
-        fprintf(stderr, "Error: line %d Additional operands.\n", countLine);
+        fprintf(stderr, "Error line %d: Additional operands.\n", countLine);
         return 0;
     }
 
@@ -520,7 +518,7 @@ int operationWithoutOperand(const char *line, const char *newSymbolName, int num
     countWord++;
     if (line)
     {
-        fprintf(stderr, "Error: line %d Additional operands.\n", countLine);
+        fprintf(stderr, "Error line %d: Additional operands.\n", countLine);
         return 0;
     }
 
@@ -747,7 +745,7 @@ void addSymbol(const char *symbolName, const char *externName, const char *codeB
     Symbol *temp = realloc(symbols, (symbolCount + 1) * sizeof(Symbol));
     if (!temp)
     {
-        fprintf(stderr, "Error: Memory allocation failed.\n");
+        fprintf(stderr, "Error Memory allocation failed.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -798,7 +796,7 @@ void addLabel(const char *name, const int count)
     SymbolTable *temp = realloc(symbolTable, (labelCount + 1) * sizeof(SymbolTable));
     if (!temp)
     {
-        fprintf(stderr, "Error: Memory allocation failed.\n");
+        fprintf(stderr, "Error Memory allocation failed.\n");
         exit(EXIT_FAILURE);
     }
     symbolTable = temp;
@@ -807,7 +805,7 @@ void addLabel(const char *name, const int count)
     symbolTable[labelCount - 1].name = strdup(name);
     if (!symbolTable[labelCount - 1].name)
     {
-        fprintf(stderr, "Error: Memory allocation failed.\n");
+        fprintf(stderr, "Error Memory allocation failed.\n");
         exit(EXIT_FAILURE);
     }
     symbolTable[labelCount - 1].count = count;
@@ -821,7 +819,7 @@ void addExtern(const char *name)
     External *temp = realloc(externs, (externCount + 1) * sizeof(External));
     if (!temp)
     {
-        fprintf(stderr, "Error: Memory allocation failed.\n");
+        fprintf(stderr, "Error Memory allocation failed.\n");
         exit(EXIT_FAILURE);
     }
     externs = temp;
@@ -830,7 +828,7 @@ void addExtern(const char *name)
     externs[externCount - 1].name = strdup(name);
     if (!externs[externCount - 1].name)
     {
-        fprintf(stderr, "Error: Memory allocation failed.\n");
+        fprintf(stderr, "Error Memory allocation failed.\n");
         exit(EXIT_FAILURE);
     }
 }
@@ -843,7 +841,7 @@ void addL(int counteLine, int wordCounter)
     L *temp = realloc(l, counteLine * sizeof(L));
     if (!temp)
     {
-        fprintf(stderr, "Error: Memory allocation failed.\n");
+        fprintf(stderr, "Error Memory allocation failed.\n");
         exit(EXIT_FAILURE);
     }
     l = temp;
@@ -863,7 +861,7 @@ char *labelDefinition(const char *token)
         char *newSymbolName = malloc(length);
         if (!newSymbolName)
         {
-            fprintf(stderr, "Error: Memory allocation failed.\n");
+            fprintf(stderr, "Error Memory allocation failed.\n");
             exit(EXIT_FAILURE);
         }
 
@@ -962,7 +960,7 @@ char *decimalToBinary(int decimal, int length)
 
     if (!binary)
     {
-        fprintf(stderr, "Error: Memory allocation failed.\n");
+        fprintf(stderr, "Error Memory allocation failed.\n");
         exit(EXIT_FAILURE);
     }
 
