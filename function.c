@@ -56,6 +56,7 @@ int addData(const char *line, int countLine, const char *newSymbolName) {
                 strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1));
                 addSymbol(newSymbolName, NULL, codeBin, 1, 0, 0); /* Add the data word*/
                 newSymbolName = NULL;
+<<<<<<< HEAD
                 countWord++;
             } else {
                 fprintf(stderr, "Error: line %d not a number \n", countLine);
@@ -63,6 +64,16 @@ int addData(const char *line, int countLine, const char *newSymbolName) {
             }
 
             token = strtok(NULL, " \t\n");
+=======
+                countWord++; /* add 1 L*/
+            }
+            else
+            {
+                fprintf(stderr, "Error: line %d %s not a number \n", countLine,token);
+                return 0;
+            }
+            token = strtok(NULL, ", \t\n");
+>>>>>>> 31f55829b7b99c7deb617daaa183a64b2ad08305
         }
     } else {
         fprintf(stderr, "line %d \n", countLine);
