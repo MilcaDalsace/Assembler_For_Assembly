@@ -147,8 +147,7 @@ int externDefinition(const char *line, int countLine)
 {
     char *remaining = strdup(line);
     char *lineCopy;
-    if (!line)
-    {
+   
         lineCopy = strdup(line);
         if (remaining && correctCommas(remaining))
         {
@@ -173,7 +172,6 @@ int externDefinition(const char *line, int countLine)
             fprintf(stderr, "Error line %d: the Extern definition is incorrect.\n", countLine);
             return 0;
         }
-    }
 }
 
 /* Processes an entry definition line.
