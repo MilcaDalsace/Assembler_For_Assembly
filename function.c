@@ -66,7 +66,7 @@ int addData(const char *line, int countLine, const char *newSymbolName) {
             token = strtok(NULL, ", \t\n");
         }
     } else {
-        fprintf(stderr, "Incorrect signs or empty line %d \n", countLine);
+        fprintf(stderr, "Error: line %d Incorrect signs or empty line\n", countLine);
         return 0;
     }
 
@@ -223,7 +223,7 @@ int addOperation(const char *line, int numOper, int countLine, const char *newSy
             }
         }
     } else {
-        fprintf(stderr, "line %d.\n", countLine);
+        fprintf(stderr, "Error: line %d Incorrect signs\n", countLine);
         free(lineCopy);
         return 0;
     }
