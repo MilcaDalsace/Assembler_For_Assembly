@@ -73,7 +73,10 @@ void firstPass(const char *sourceFilename)
                 else if (strcmp(token, ".extern") == 0)
                 { /* External directive*/
                     char *remaining = strtok(NULL, "");
-                    if (externDefinition(remaining, countLine) == 0)
+                    if (!remaining){
+                        uncorrect = 1;
+                    }
+                    else if(externDefinition(remaining, countLine) == 0)
                     {
                         uncorrect = 1;
                     }
