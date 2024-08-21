@@ -148,8 +148,5 @@ char *decimalToBinary(int n, int numOfChar);
 /* Correct commas in a string representing a list of objects.*/
 int correctCommas(char *line);
 
-/*Check if the instruction operand is correct */
-int instructionOperandIsCorrect(int numOper, const char *operand1, const char *operand2);
-
 /* The function frees the defined memory */
 void freeMemory();
