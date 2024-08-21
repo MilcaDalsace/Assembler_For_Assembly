@@ -27,7 +27,7 @@ void firstPass(const char *sourceFilename)
         countLine++;
         strcpy(lineToCheck, line);
         char *token = strtok(lineToCheck, " \t\n");
-        if (token)
+        if (token&&(token[0]!= ';'))
         {
             newSymbolName = labelDefinition(token); /* Check if it is a new label*/
             if ((newSymbolName))
@@ -97,7 +97,7 @@ void firstPass(const char *sourceFilename)
                 }
             }
             /* Uncorrect introduction*/
-            else if (strcmp(token, ";"))
+            else
             {
                 fprintf(stderr, "Error: line %d introduction name incorrect.\n", countLine);
                 uncorrect = 1;
@@ -148,7 +148,7 @@ void secondPass(const char *sourceFilename)
         if (token)
         {
             /* Check if the definition has done*/
-            if ((strcmp(token, ";") == 0) || (strcmp(token, ".data") == 0) || (strcmp(token, ".string") == 0) || (strcmp(token, ".extern") == 0))
+            if ((token[0]== ';')|| (strcmp(token, ".data") == 0) || (strcmp(token, ".string") == 0) || (strcmp(token, ".extern") == 0))
             {
                 continue;
             }
