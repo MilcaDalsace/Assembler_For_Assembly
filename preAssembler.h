@@ -10,20 +10,20 @@ typedef struct
 extern Macro *macros;
 extern int macroCount;
 
-/*is name restricted האם השם שמור?*/
-/*int isNameRestricted(const char *name);*/
-
-/*יצירת מקרו חדש והוספתו לרשימת המקרוים*/
+/* Adds a new macro to the list of macros.*/
 void addMacro(const char *name, const char *content) ;
 
-/*מחזירה את קוד המקרו לפי השם של*/
+/* Finds a macro by its name.*/
 const char* findMacro(const char *name);
 
-/*בדיקה האם הקובץ נפתח בצורה נכונה*/
+/* Checks if a file is open and valid.*/
 int checkingWhetherTheFileIsCorrect(FILE * checkedFile);
 
-/*מחיקת קובץ ויציאה*/
+/* Removes a file and exits the program.*/
 void removeFileAndExit(const char *outputFilename);
 
-/*פריסת הקוד של הפרה אסמבלר ויוצרת את הקובץ החדש */
+/* Displays an error message and exits the program.*/
+void regetError(const char *errorLine, FILE *outputFile, char *outputFilename);
+
+/* Processes an assembly language file.*/
 void processFile(const char *inputFilename);
