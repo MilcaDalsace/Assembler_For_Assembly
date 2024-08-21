@@ -5,6 +5,9 @@
 #include "transition.h"
 #include "function.h"
 
+/* Checks if the number of command-line arguments is correct.
+
+   Returns 1 if the number of arguments is correct, 0 otherwise. */
 int numFileIsCoorect(int argc, char *argv[])
 {
     int count = 1;

@@ -6,10 +6,13 @@
 #include "transition.h"
 #include "function.h"
 
-/* First pass*/
+/* Performs the first pass of the assembler, processing the source code and building the symbol table.
+
+   Returns 1 if the first pass is successful, 0 otherwise. */
 void firstPass(const char *sourceFilename)
 {
     FILE *sourceFile = fopen(sourceFilename, "r");
+
     if (!sourceFile)
     {
         perror("Error opening input file");
@@ -27,27 +30,30 @@ void firstPass(const char *sourceFilename)
         countLine++;
         strcpy(lineToCheck, line);
         char *token = strtok(lineToCheck, " \t\n");
-        if (token&&(token[0]!= ';'))
+        if (token&&(token[0]!= ';'))/* No comment*/
         {
-            newSymbolName = labelDefinition(token); /* Check if it is a new label*/
-            if ((newSymbolName))
-            { /* Label definition*/
+            newSymbolName = labelDefinition(token); /* Check for label definition*/
+
+            if (newSymbolName)
+            { /* Label definition found*/
                 if (isNameRestricted(newSymbolName))
-                { /* Check if it is a restricted name*/
-                    fprintf(stderr, "Error: line %d %s  is restricted name.\n", countLine, newSymbolName);
+                { /* Check if label name is restricted*/
+                    fprintf(stderr, "Error: line %d %s is restricted name.\n", countLine, newSymbolName);
                     uncorrect = 1;
                 }
                 else
-                {                                                                                /* A new correct label*/
-                    token = strtok(NULL, " \t\n");                                               /* Next field*/
+                {
+                    token = strtok(NULL, " \t\n"); /* Get the next token*/
                 }
             }
-            if(!token&&newSymbolName){
-                fprintf(stderr, "Error: line %d %s  is empty label.\n", countLine, newSymbolName);
+
+            if (!token && newSymbolName)
+            {
+                fprintf(stderr, "Error: line %d %s is empty label.\n", countLine, newSymbolName);
             }
             else if (token)
             {
-                /* Data*/
+                /* Data directive*/
                 if (strcmp(token, ".data") == 0)
                 {
                     char *remaining = strtok(NULL, "");
@@ -56,38 +62,34 @@ void firstPass(const char *sourceFilename)
                         uncorrect = 1;
                     }
                 }
-                /* String*/
                 else if (strcmp(token, ".string") == 0)
-                {
+                { /* String directive*/
                     char *remaining = strtok(NULL, "");
                     if (addString(remaining, countLine, newSymbolName) == 0)
                     {
                         uncorrect = 1;
                     }
                 }
-                /* Extern*/
                 else if (strcmp(token, ".extern") == 0)
-                {
+                { /* External directive*/
                     char *remaining = strtok(NULL, "");
                     if (externDefinition(remaining, countLine) == 0)
                     {
                         uncorrect = 1;
                     }
-                    addL(countLine, 0);
+                    addL(countLine, 0); /* Add line count for external definition*/
                 }
-                /* Entry*/
                 else if (strcmp(token, ".entry") == 0)
-                {
+                { /* Entry directive*/
                     char *remaining = strtok(NULL, "");
                     if (entryDefinition(remaining, countLine, 1) == 0)
                     {
                         uncorrect = 1;
                     }
-                    addL(countLine, 0);
+                    addL(countLine, 0); /* Add line count for entry definition*/
                 }
-                /* Operation list*/
                 else if (findOperation(token) + 1)
-                {
+                { /* Operation*/
                     int numOper = findOperation(token);
                     char *remaining = strtok(NULL, "");
                     if (addOperation(remaining, numOper, countLine, newSymbolName) == 0)
@@ -103,26 +105,33 @@ void firstPass(const char *sourceFilename)
                 uncorrect = 1;
             }
         }
+
         free(newSymbolName);
         newSymbolName = NULL;
     }
+
     fclose(sourceFile);
+
     if (uncorrect == 1)
     {
-        fprintf(stderr, "Error: Incorrecrt file was recieved.\n");
+        fprintf(stderr, "Error: Incorrect file was received.\n");
         exit(EXIT_FAILURE);
     }
 }
 
-/* Second pass*/
+/* Performs the second pass of the assembler, resolving labels and updating operands.
+
+   Returns 1 if the second pass is successful, 0 otherwise. */
 void secondPass(const char *sourceFilename)
 {
     FILE *sourceFile = fopen(sourceFilename, "r");
+
     if (!sourceFile)
     {
         perror("Error opening input file");
         return;
     }
+
     char line[MAX_LINE_LENGTH];
     char lineToCheck[MAX_LINE_LENGTH];
     int uncorrect = 0;
@@ -135,58 +144,62 @@ void secondPass(const char *sourceFilename)
         strcpy(lineToCheck, line);
         countLine++;
         char *token = strtok(lineToCheck, " \t\n");
-        /* label*/
+
+        /* Check for label definition*/
         if (token)
         {
-            newSymbolName = labelDefinition(token); /* Check if it is a label*/
-            if ((newSymbolName) != NULL)
-            {                                  /* Label definition*/
-                token = strtok(NULL, " \t\n"); /* Next field*/
+            newSymbolName = labelDefinition(token);
+            if (newSymbolName)
+            {
+                token = strtok(NULL, " \t\n"); /* Get the next token*/
             }
         }
-        /* check the first operation*/
+
+        /* Check the first operation*/
         if (token)
         {
-            /* Check if the definition has done*/
+            /* Check if the line is a directive or comment*/
             if ((token[0]== ';')|| (strcmp(token, ".data") == 0) || (strcmp(token, ".string") == 0) || (strcmp(token, ".extern") == 0))
             {
                 continue;
             }
-            /* Entry*/
             else if (strcmp(token, ".entry") == 0)
-            {
+            { /* Entry directive*/
                 char *remaining = strtok(NULL, "");
                 if (entryDefinition(remaining, countLine, 0) == 0)
                 {
                     uncorrect = 1;
                 }
             }
-            /* Operation list*/
             else if (findOperation(token) + 1)
-            {
+            { /* Operation*/
                 char *remaining = strtok(NULL, "");
-                if (updateOparand(remaining, countLine, countAdress) == 0)
+                if (updateOperands(remaining, countLine, countAdress) == 0)
                 {
                     uncorrect = 1;
                 }
             }
         }
+
         countAdress += l[countLine - 1].wordCounter;
     }
 
     if (uncorrect == 1)
     {
-        fprintf(stderr, "Error: Incorrecrt file was recieved.\n");
+        fprintf(stderr, "Error: Incorrect file was received.\n");
         exit(EXIT_FAILURE);
     }
+
     fclose(sourceFile);
 }
 
-/* Build output files*/
+/* Builds the output files (.ob, .ext, .ent) based on the symbol table and line counts.
+
+   Returns 1 if the output files are created successfully, 0 otherwise. */
 void buildOutputFiles(const char *sourceFilename)
 {
-
     FILE *sourceFile = fopen(sourceFilename, "r");
+
     if (!sourceFile)
     {
         perror("Error opening input file");
@@ -215,6 +228,7 @@ void buildOutputFiles(const char *sourceFilename)
         fclose(obFile);
         return;
     }
+
     int externExist = 0;
 
     /* Create .ent file*/
@@ -227,15 +241,18 @@ void buildOutputFiles(const char *sourceFilename)
         perror("Error creating .ent file");
         return;
     }
+
     int entryExist = 0;
 
-    /* Write to .ob file and to .ext file*/
+    /* Write to .ob file and .ext file*/
     fprintf(obFile, "%d \t %d \n", IC, DC);
+
     for (int i = 0; i < symbolCount; i++)
     {
         Symbol *sym = &symbols[i];
         int codeInDecimal = binaryToDecimal(sym->code);
         fprintf(obFile, "%04d \t %05o \n", sym->address, codeInDecimal);
+
         if (sym->isExtern)
         {
             externExist = 1;
@@ -244,7 +261,7 @@ void buildOutputFiles(const char *sourceFilename)
         }
     }
 
-    /* write to .ent file*/
+    /* Write to .ent file*/
     for (int i = 0; i < labelCount; i++)
     {
         Symbol *sym = &symbols[symbolTable[i].count];
@@ -255,18 +272,19 @@ void buildOutputFiles(const char *sourceFilename)
             fflush(entFile);
         }
     }
+
     fprintf(stderr, "The files were created successfully.\n");
     fclose(extFile);
     fclose(entFile);
     fclose(obFile);
 
-    /* no entryes*/
+    /* Remove .ent file if no entries were found*/
     if (!entryExist)
     {
         remove(entryFilename);
     }
 
-    /* no externs*/
+    /* Remove .ext file if no externals were found*/
     if (!externExist)
     {
         remove(externFilename);

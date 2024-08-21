@@ -34,29 +34,27 @@ L *l = NULL;
 int IC = 0;
 int DC = 0;
 
-int addData(const char *line, int countLine, const char *newSymbolName)
-{
+/* Adds data to the symbol table.
+
+   Returns 1 if the data is successfully added, 0 otherwise. */
+int addData(const char *line, int countLine, const char *newSymbolName) {
     int countWord = 0;
     char codeBin[CODE_SEGMENT_SIZE];
     char *lineCopy;
-    if (line)
-    {
+
+    if (line) {
         lineCopy = strdup(line);
-    }
-    else
-    {
+    } else {
         lineCopy = NULL;
     }
-    if (lineCopy != NULL && correctCommas(lineCopy))
-    {
+
+    if (lineCopy != NULL && correctCommas(lineCopy)) {
         char *token = strtok(lineCopy, ", \t\n");
-        while (token != NULL)
-        {
-            if (token && isNumber(token))
-            {
+        while (token != NULL) {
+            if (token && isNumber(token)) {
                 int value = atoi(token);
                 strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1));
-                addSymbol(newSymbolName, NULL, codeBin, 1, 0, 0); /* the first word*/
+                addSymbol(newSymbolName, NULL, codeBin, 1, 0, 0); /* Add the data word*/
                 newSymbolName = NULL;
                 countWord++; /* add 1 L*/
             }
@@ -67,145 +65,131 @@ int addData(const char *line, int countLine, const char *newSymbolName)
             }
             token = strtok(NULL, ", \t\n");
         }
-    }
-    else
-    {
+    } else {
         fprintf(stderr, "line %d \n", countLine);
         return 0;
     }
+
     DC += countWord;
     addL(countLine, countWord);
     return 1;
 }
 
-int addString(const char *line, int countLine, const char *newSymbolName)
-{
+/* Adds a string to the symbol table.
+
+   Returns 1 if the string is successfully added, 0 otherwise. */
+int addString(const char *line, int countLine, const char *newSymbolName) {
     int countWord = 0;
     char codeBin[CODE_SEGMENT_SIZE];
     char *lineCopy;
-    if (line)
-    {
+
+    if (line) {
         lineCopy = strdup(line);
-    }
-    else
-    {
+    } else {
         lineCopy = NULL;
     }
+
     char *token = strtok(lineCopy, " \t\n");
-    if (isCorrectString(token) == 0)
-    {
+    if (isCorrectString(token) == 0) {
         fprintf(stderr, "Error: line %d Missing quotation marks.\n", countLine);
         return 0;
-    }
-    else
-    {
+    } else {
         int length = strlen(token);
         char charToAdd = token[1];
-        int value = charToAdd;                                          /* ASCII value*/
+        int value = charToAdd; /* ASCII value*/
         strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1)); /* Create binary code*/
-        addSymbol(newSymbolName, NULL, codeBin, 1, 0, 0);               /* The first word*/
+        addSymbol(newSymbolName, NULL, codeBin, 1, 0, 0); /* Add the first word*/
         countWord++;
-        for (int i = 2; i < length - 1; i++)
-        {
+
+        for (int i = 2; i < length - 1; i++) {
             charToAdd = token[i];
-            value = charToAdd;                                              /* ASCII value*/
+            value = charToAdd; /* ASCII value*/
             strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1)); /* Create binary code*/
-            addSymbol(NULL, NULL, codeBin, 1, 0, 0);                        /* All the next chars*/
+            addSymbol(NULL, NULL, codeBin, 1, 0, 0); /* Add the next character*/
             countWord++;
         }
-        strcpy(codeBin, decimalToBinary(0, CODE_SEGMENT_SIZE - 1)); /* Create binary codeBin*/
-        addSymbol(NULL, NULL, codeBin, 1, 0, 0);                    /* Add /0 at the end*/
+
+        strcpy(codeBin, decimalToBinary(0, CODE_SEGMENT_SIZE - 1)); /* Create binary code for the null terminator*/
+        addSymbol(NULL, NULL, codeBin, 1, 0, 0); /* Add the null terminator*/
         countWord++;
 
         token = strtok(NULL, " \t\n");
-        if (token)
-        {
+        if (token) {
             fprintf(stderr, "Error: line %d Additional characters at the line.\n", countLine);
             return 0;
         }
+
         DC += countWord;
         addL(countLine, countWord);
         return 1;
     }
 }
 
-int externDefinition(const char *line, int countLine)
-{
+/* Processes an external definition line.
+
+   Returns 1 if the external definition is successful, 0 otherwise. */
+int externDefinition(const char *line, int countLine) {
     char *remaining = strdup(line);
     char *lineCopy;
-    if (line)
-    {
+
+    if (line) {
         lineCopy = strdup(line);
-    }
-    else
-    {
+    } else {
         lineCopy = NULL;
     }
-    if (remaining && correctCommas(remaining))
-    {
+
+    if (remaining && correctCommas(remaining)) {
         char *token = strtok(lineCopy, " \t\n");
-        while (token != NULL)
-        {
-            if (isNameRestricted(token))
-            {
+        while (token != NULL) {
+            if (isNameRestricted(token)) {
                 fprintf(stderr, "Error: line %d is restricted name\n", countLine);
                 return 0;
-            }
-            else
-            {
-                addExtern(token); /* Add extern*/
+            } else {
+                addExtern(token); /* Add the external symbol*/
                 token = strtok(NULL, " \t\n");
             }
         }
         return 1;
-    }
-    else
-    {
-        fprintf(stderr, "Error: line %d the Extern definition is uncorrect.\n", countLine);
+    } else {
+        fprintf(stderr, "Error: line %d the Extern definition is incorrect.\n", countLine);
         return 0;
     }
 }
 
-int entryDefinition(const char *line, int countLine, int isFirstPass)
-{
+/* Processes an entry definition line.
+
+   Returns 1 if the entry definition is successful, 0 otherwise. */
+int entryDefinition(const char *line, int countLine, int isFirstPass) {
     char *lineCopy;
-    if (line)
-    {
+
+    if (line) {
         lineCopy = strdup(line);
-    }
-    else
-    {
+    } else {
         lineCopy = NULL;
     }
+
     char *token = strtok(lineCopy, " \t\n");
-    if (token)
-    {
-        if (findLabel(token) + 1)
-        {
+    if (token) {
+        if (findLabel(token) + 1) {
             Symbol *sym = &symbols[findLabel(token)];
-            if (sym && sym->isEntry == 0)
-            {
-                sym->isEntry = 1;
+            if (sym && sym->isEntry == 0) {
+                sym->isEntry = 1; /* Mark the symbol as an entry point*/
             }
-        }
-        else if (isFirstPass==0)
-        {
+        } else if (isFirstPass == 0) { /* Check for label existence only in the second pass*/
             fprintf(stderr, "Error: line %d label not exist.\n", countLine);
             return 0;
         }
 
         token = strtok(NULL, " \t\n");
-        if (token)
-        {
+        if (token) {
             fprintf(stderr, "Error: line %d Additional characters at the line.\n", countLine);
             return 0;
         }
-    }
-    else
-    {
-        fprintf(stderr, "Error: line %d Labbel name is missing.\n", countLine);
+    } else {
+        fprintf(stderr, "Error: line %d Label name is missing.\n", countLine);
         return 0;
     }
+
     return 1;
 }
 
