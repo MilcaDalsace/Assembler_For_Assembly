@@ -174,7 +174,7 @@ void secondPass(const char *sourceFilename)
             else if (findOperation(token) + 1)
             { /* Operation*/
                 char *remaining = strtok(NULL, "");
-                if (updateOperand(remaining, countLine, countAdress) == 0)
+                if (updateOparand(remaining, countLine, countAdress) == 0)
                 {
                     uncorrect = 1;
                 }
