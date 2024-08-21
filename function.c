@@ -100,7 +100,6 @@ int addString(const char *line, int countLine, const char *newSymbolName)
     else
     {
         int length = strlen(token);
-        fprintf(stderr, " line: %d %d length.\n", countLine, length);
         char charToAdd = token[1];
         int value = charToAdd;                                                   /* ASCII value*/
         strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1));             /* Create binary code*/
