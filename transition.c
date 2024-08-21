@@ -42,7 +42,10 @@ void firstPass(const char *sourceFilename)
                     token = strtok(NULL, " \t\n");                                               /* Next field*/
                 }
             }
-            if (token)
+            if(!token&&newSymbolName){
+                fprintf(stderr, "Error: line %d %s  is empty label.\n", countLine, newSymbolName);
+            }
+            else if (token)
             {
                 /* Data*/
                 if (strcmp(token, ".data") == 0)
