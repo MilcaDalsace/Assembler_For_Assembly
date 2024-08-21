@@ -38,7 +38,7 @@ void firstPass(const char *sourceFilename)
             { /* Label definition found*/
                 if (isNameRestricted(newSymbolName))
                 { /* Check if label name is restricted*/
-                    fprintf(stderr, "Error: line %d %s is restricted name.\n", countLine, newSymbolName);
+                    fprintf(stderr, "Error line %d: %s is restricted name.\n", countLine, newSymbolName);
                     uncorrect = 1;
                 }
                 else
@@ -49,7 +49,7 @@ void firstPass(const char *sourceFilename)
 
             if (!token && newSymbolName)
             {
-                fprintf(stderr, "Error: line %d %s is empty label.\n", countLine, newSymbolName);
+                fprintf(stderr, "Error line %d: %s is empty label.\n", countLine, newSymbolName);
             }
             else if (token)
             {
@@ -104,7 +104,7 @@ void firstPass(const char *sourceFilename)
             /* Uncorrect introduction*/
             else
             {
-                fprintf(stderr, "Error: line %d introduction name incorrect.\n", countLine);
+                fprintf(stderr, "Error line %d: introduction name incorrect.\n", countLine);
                 uncorrect = 1;
             }
         }
@@ -117,7 +117,7 @@ void firstPass(const char *sourceFilename)
 
     if (uncorrect == 1)
     {
-        fprintf(stderr, "Error: Incorrect file was received.\n");
+        fprintf(stderr, "Error Incorrect file was received.\n");
         exit(EXIT_FAILURE);
     }
 }
@@ -189,7 +189,7 @@ void secondPass(const char *sourceFilename)
 
     if (uncorrect == 1)
     {
-        fprintf(stderr, "Error: Incorrect file was received.\n");
+        fprintf(stderr, "Error Incorrect file was received.\n");
         exit(EXIT_FAILURE);
     }
 
