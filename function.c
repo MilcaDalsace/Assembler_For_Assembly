@@ -189,11 +189,7 @@ int entryDefinition(const char *line, int countLine, int isFirstPass)
                 sym->isEntry = 1;
             }
         }
-        else if (isFirstPass)
-        {
-            fprintf(stderr, " line: %d %s not yet found in labbels.\n", countLine, token);
-        }
-        else
+        else if (isFirstPass==0)
         {
             fprintf(stderr, "Error: line %d label not exist.\n", countLine);
             return 0;
