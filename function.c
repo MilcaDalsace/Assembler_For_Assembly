@@ -380,13 +380,6 @@ int operationWithTwoOperand(const char *line, const char *newSymbolName, int num
     strcpy(codeBin, miunOperation(numOper, operand1, operand2)); /* Create code for the operation*/
     addSymbol(newSymbolName, NULL, codeBin, 0, 0, 0);            /* Add operation to the symbols*/
     countWord++;
-   
-    /*if (!instructionOperandIsCorrect(numOper, operand1, NULL))
-    {
-        fprintf(stderr, "Error: line %d The type of the operand does not match the type of the operation.\n", countLine);
-        return 0;
-    }
-*/
     if (isRegister(operand1) + 1 && isRegister(operand2) + 1)
     {
         strcpy(codeBin, miunTwoRegister(operand1, operand2)); /* Create code for registers*/
@@ -465,13 +458,6 @@ int operationWithOneOperand(const char *line, const char *newSymbolName, int num
     strcpy(codeBin, miunOperation(numOper, NULL, operand1)); /* Create code for the operation*/
     addSymbol(newSymbolName, NULL, codeBin, 0, 0, 0);        /* Add operation to the symbols*/
     countWord++;
-    /*
-    if (!instructionOperandIsCorrect(numOper, operand1, NULL)) 
-    {
-        fprintf(stderr, "Error: line %d The type of the operand does not match the type of the operation.\n", countLine);
-        return 0;
-    }
-    */
     strcpy(codeBin, miunOperand(operand1, 1)); /* Create code for operand1*/
     if (findExtern(operand1))
     {
@@ -1032,55 +1018,6 @@ int correctCommas(char *str)
        it means there was an extra comma at the end, which is an error. */
     return 1;
 }
-
-/*Check if the instruction operand is correct */
-/*
-int instructionOperandIsCorrect(int numOper, const char *operand1, const char *operand2)
-{
-    switch (numOper)
-    {
-    case 0:
-    case 2:
-    case 3:
-    {
-        if (operand2[0] == '#')
-        {
-            return 0;
-        }
-        return 1;
-    }
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 11:
-    {
-        if (operand1[0] == '#')
-        {
-            return 0;
-        }
-        return 1;
-    }
-    case 9:
-    case 10:
-    case 13:
-    { /*testing that nothing different from a label was received*//*
-        if (operand1[0] == '#' || isRegister(operand1)+1)
-            return 0;
-        return 1;
-    }
-    case 4:
-    { /*testing that nothing different from a label was received*//*
-        if (operand2[0] == '#' || operand1[0] == '#' || isRegister(operand1)+1)
-        {
-            return 0;
-        }
-        return 1;
-    }
-    default:
-        return 1;
-    }
-} */
 
 /* The function frees the defined memory */
 void freeMemory()
