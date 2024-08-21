@@ -37,21 +37,28 @@ int DC = 0;
 /* Adds data to the symbol table.
 
    Returns 1 if the data is successfully added, 0 otherwise. */
-int addData(const char *line, int countLine, const char *newSymbolName) {
+int addData(const char *line, int countLine, const char *newSymbolName)
+{
     int countWord = 0;
     char codeBin[CODE_SEGMENT_SIZE];
     char *lineCopy;
 
-    if (line) {
+    if (line)
+    {
         lineCopy = strdup(line);
-    } else {
+    }
+    else
+    {
         lineCopy = NULL;
     }
 
-    if (lineCopy != NULL && correctCommas(lineCopy)) {
+    if (lineCopy != NULL && correctCommas(lineCopy))
+    {
         char *token = strtok(lineCopy, ", \t\n");
-        while (token != NULL) {
-            if (token && isNumber(token)) {
+        while (token != NULL)
+        {
+            if (token && isNumber(token))
+            {
                 int value = atoi(token);
                 strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1));
                 addSymbol(newSymbolName, NULL, codeBin, 1, 0, 0); /* Add the data word*/
@@ -60,12 +67,14 @@ int addData(const char *line, int countLine, const char *newSymbolName) {
             }
             else
             {
-                fprintf(stderr, "Error: line %d %s not a number \n", countLine,token);
+                fprintf(stderr, "Error: line %d %s not a number \n", countLine, token);
                 return 0;
             }
             token = strtok(NULL, ", \t\n");
         }
-    } else {
+    }
+    else
+    {
         fprintf(stderr, "line %d \n", countLine);
         return 0;
     }
@@ -78,43 +87,52 @@ int addData(const char *line, int countLine, const char *newSymbolName) {
 /* Adds a string to the symbol table.
 
    Returns 1 if the string is successfully added, 0 otherwise. */
-int addString(const char *line, int countLine, const char *newSymbolName) {
+int addString(const char *line, int countLine, const char *newSymbolName)
+{
     int countWord = 0;
     char codeBin[CODE_SEGMENT_SIZE];
     char *lineCopy;
 
-    if (line) {
+    if (line)
+    {
         lineCopy = strdup(line);
-    } else {
+    }
+    else
+    {
         lineCopy = NULL;
     }
 
     char *token = strtok(lineCopy, " \t\n");
-    if (isCorrectString(token) == 0) {
+    if (isCorrectString(token) == 0)
+    {
         fprintf(stderr, "Error: line %d Missing quotation marks.\n", countLine);
         return 0;
-    } else {
+    }
+    else
+    {
         int length = strlen(token);
         char charToAdd = token[1];
-        int value = charToAdd; /* ASCII value*/
+        int value = charToAdd;                                          /* ASCII value*/
         strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1)); /* Create binary code*/
-        addSymbol(newSymbolName, NULL, codeBin, 1, 0, 0); /* Add the first word*/
+        addSymbol(newSymbolName, NULL, codeBin, 1, 0, 0);               /* Add the first word*/
         countWord++;
 
-        for (int i = 2; i < length - 1; i++) {
+        for (int i = 2; i < length - 1; i++)
+        {
             charToAdd = token[i];
-            value = charToAdd; /* ASCII value*/
+            value = charToAdd;                                              /* ASCII value*/
             strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1)); /* Create binary code*/
-            addSymbol(NULL, NULL, codeBin, 1, 0, 0); /* Add the next character*/
+            addSymbol(NULL, NULL, codeBin, 1, 0, 0);                        /* Add the next character*/
             countWord++;
         }
 
         strcpy(codeBin, decimalToBinary(0, CODE_SEGMENT_SIZE - 1)); /* Create binary code for the null terminator*/
-        addSymbol(NULL, NULL, codeBin, 1, 0, 0); /* Add the null terminator*/
+        addSymbol(NULL, NULL, codeBin, 1, 0, 0);                    /* Add the null terminator*/
         countWord++;
 
         token = strtok(NULL, " \t\n");
-        if (token) {
+        if (token)
+        {
             fprintf(stderr, "Error: line %d Additional characters at the line.\n", countLine);
             return 0;
         }
@@ -128,29 +146,40 @@ int addString(const char *line, int countLine, const char *newSymbolName) {
 /* Processes an external definition line.
 
    Returns 1 if the external definition is successful, 0 otherwise. */
-int externDefinition(const char *line, int countLine) {
+int externDefinition(const char *line, int countLine)
+{
     char *remaining = strdup(line);
     char *lineCopy;
 
-    if (line) {
+    if (line)
+    {
         lineCopy = strdup(line);
-    } else {
+    }
+    else
+    {
         lineCopy = NULL;
     }
 
-    if (remaining && correctCommas(remaining)) {
+    if (remaining && correctCommas(remaining))
+    {
         char *token = strtok(lineCopy, " \t\n");
-        while (token != NULL) {
-            if (isNameRestricted(token)) {
+        while (token != NULL)
+        {
+            if (isNameRestricted(token))
+            {
                 fprintf(stderr, "Error: line %d is restricted name\n", countLine);
                 return 0;
-            } else {
+            }
+            else
+            {
                 addExtern(token); /* Add the external symbol*/
                 token = strtok(NULL, " \t\n");
             }
         }
         return 1;
-    } else {
+    }
+    else
+    {
         fprintf(stderr, "Error: line %d the Extern definition is incorrect.\n", countLine);
         return 0;
     }
@@ -159,33 +188,45 @@ int externDefinition(const char *line, int countLine) {
 /* Processes an entry definition line.
 
    Returns 1 if the entry definition is successful, 0 otherwise. */
-int entryDefinition(const char *line, int countLine, int isFirstPass) {
+int entryDefinition(const char *line, int countLine, int isFirstPass)
+{
     char *lineCopy;
 
-    if (line) {
+    if (line)
+    {
         lineCopy = strdup(line);
-    } else {
+    }
+    else
+    {
         lineCopy = NULL;
     }
 
     char *token = strtok(lineCopy, " \t\n");
-    if (token) {
-        if (findLabel(token) + 1) {
+    if (token)
+    {
+        if (findLabel(token) + 1)
+        {
             Symbol *sym = &symbols[findLabel(token)];
-            if (sym && sym->isEntry == 0) {
+            if (sym && sym->isEntry == 0)
+            {
                 sym->isEntry = 1; /* Mark the symbol as an entry point*/
             }
-        } else if (isFirstPass == 0) { /* Check for label existence only in the second pass*/
+        }
+        else if (isFirstPass == 0)
+        { /* Check for label existence only in the second pass*/
             fprintf(stderr, "Error: line %d label not exist.\n", countLine);
             return 0;
         }
 
         token = strtok(NULL, " \t\n");
-        if (token) {
+        if (token)
+        {
             fprintf(stderr, "Error: line %d Additional characters at the line.\n", countLine);
             return 0;
         }
-    } else {
+    }
+    else
+    {
         fprintf(stderr, "Error: line %d Label name is missing.\n", countLine);
         return 0;
     }
@@ -196,33 +237,48 @@ int entryDefinition(const char *line, int countLine, int isFirstPass) {
 /* Adds an operation to the symbol table based on the given line and operation number.
 
    Returns 1 if the operation is successfully added, 0 otherwise. */
-int addOperation(const char *line, int numOper, int countLine, const char *newSymbolName) {
+int addOperation(const char *line, int numOper, int countLine, const char *newSymbolName)
+{
     char *lineCopy;
 
-    if (line) {
+    if (line)
+    {
         lineCopy = strdup(line);
-    } else {
+    }
+    else
+    {
         lineCopy = NULL;
     }
 
-    if ((!line) || (lineCopy && correctCommas(lineCopy))) {
-        if (numOper < 5) { /* Group 1 operations (2 operands)*/
-            if (!operationWithTwoOperand(lineCopy, newSymbolName, numOper, countLine)) {
-                free(lineCopy);
-                return 0;
-            }
-        } else if (numOper < 14) { /* Group 2 operations (1 operand)*/
-            if (!operationWithOneOperand(lineCopy, newSymbolName, numOper, countLine)) {
-                free(lineCopy);
-                return 0;
-            }
-        } else { /* Group 3 operations (0 operands)*/
-            if (!operationWithoutOperand(lineCopy, newSymbolName, numOper, countLine)) {
+    if ((!line) || (lineCopy && correctCommas(lineCopy)))
+    {
+        if (numOper < 5)
+        { /* Group 1 operations (2 operands)*/
+            if (!operationWithTwoOperand(lineCopy, newSymbolName, numOper, countLine))
+            {
                 free(lineCopy);
                 return 0;
             }
         }
-    } else {
+        else if (numOper < 14)
+        { /* Group 2 operations (1 operand)*/
+            if (!operationWithOneOperand(lineCopy, newSymbolName, numOper, countLine))
+            {
+                free(lineCopy);
+                return 0;
+            }
+        }
+        else
+        { /* Group 3 operations (0 operands)*/
+            if (!operationWithoutOperand(lineCopy, newSymbolName, numOper, countLine))
+            {
+                free(lineCopy);
+                return 0;
+            }
+        }
+    }
+    else
+    {
         fprintf(stderr, "line %d.\n", countLine);
         free(lineCopy);
         return 0;
@@ -234,12 +290,16 @@ int addOperation(const char *line, int numOper, int countLine, const char *newSy
 /* Updates the operands in the symbol table based on the given line and address.
 
    Returns 1 if the operands are successfully updated, 0 otherwise. */
-int updateOparand(const char *line, int countLine, int countAdress) {
+int updateOparand(const char *line, int countLine, int countAdress)
+{
     char *lineCopy;
 
-    if (line) {
+    if (line)
+    {
         lineCopy = strdup(line);
-    } else {
+    }
+    else
+    {
         lineCopy = NULL;
     }
 
@@ -247,20 +307,24 @@ int updateOparand(const char *line, int countLine, int countAdress) {
     char codeBin[CODE_SEGMENT_SIZE];
     int i = 1;
 
-    while (token != NULL) {
+    while (token != NULL)
+    {
         int symbolAddress = countAdress + i;
 
-        if (strcmp(symbols[symbolAddress].code, NOT_FOUND) == 0) { /* Operand not found in the first pass*/
+        if (strcmp(symbols[symbolAddress].code, NOT_FOUND) == 0)
+        { /* Operand not found in the first pass*/
             Symbol *sym = &symbols[symbolAddress];
-            strcpy(codeBin, miunOperand(token, 1)); /* Generate machine code for the operand*/
+            strcpy(codeBin, miunOperand(token, 1));         /* Generate machine code for the operand*/
             strncpy(sym->code, codeBin, CODE_SEGMENT_SIZE); /* Update the symbol's code*/
 
-            if (findExtern(token)) {
+            if (findExtern(token))
+            {
                 sym->isExtern = 1; /* Mark the symbol as external*/
                 strncpy(sym->externName, token, MAX_LABEL_NAME);
             }
 
-            if (strcmp(codeBin, NOT_FOUND) == 0) {
+            if (strcmp(codeBin, NOT_FOUND) == 0)
+            {
                 fprintf(stderr, "Error: line %d label not found.\n", countLine);
                 return 0;
             }
@@ -977,30 +1041,18 @@ int correctCommas(char *str)
 /* The function frees the defined memory */
 void freeMemory()
 {
-    int i;
-
     /* Free memory for macros */
-    for (i = 0; i < macroCount; i++)
-    {
-        free(macros[i].name);
-        free(macros[i].content);
-    }
     free(macros);
 
     /* Free allocated memory for symbols */
-    for (i = 0; i < symbolCount; i++)
-    {
-        free(symbolTable[i].name);
-    }
     free(symbolTable);
 
     /* Free allocated memory for externs */
-    for (i = 0; i < externCount; i++)
-    {
-        free(externs[i].name);
-    }
     free(externs);
 
     /* Free allocated memory for symbols (assuming symbols is a pointer to a data structure) */
     free(symbols);
+
+    /* Free allocated memory for the number lines counter each symbole take */
+    free(l);
 }
