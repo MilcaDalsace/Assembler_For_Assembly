@@ -380,12 +380,13 @@ int operationWithTwoOperand(const char *line, const char *newSymbolName, int num
     strcpy(codeBin, miunOperation(numOper, operand1, operand2)); /* Create code for the operation*/
     addSymbol(newSymbolName, NULL, codeBin, 0, 0, 0);            /* Add operation to the symbols*/
     countWord++;
-    if (!instructionOperandIsCorrect(numOper, operand1, NULL))/*check if it correct operand*/
+   
+    /*if (!instructionOperandIsCorrect(numOper, operand1, NULL))
     {
         fprintf(stderr, "Error: line %d The type of the operand does not match the type of the operation.\n", countLine);
         return 0;
     }
-
+*/
     if (isRegister(operand1) + 1 && isRegister(operand2) + 1)
     {
         strcpy(codeBin, miunTwoRegister(operand1, operand2)); /* Create code for registers*/
@@ -464,11 +465,13 @@ int operationWithOneOperand(const char *line, const char *newSymbolName, int num
     strcpy(codeBin, miunOperation(numOper, NULL, operand1)); /* Create code for the operation*/
     addSymbol(newSymbolName, NULL, codeBin, 0, 0, 0);        /* Add operation to the symbols*/
     countWord++;
-    if (!instructionOperandIsCorrect(numOper, operand1, NULL)) /*check if it correct operand*/
+    /*
+    if (!instructionOperandIsCorrect(numOper, operand1, NULL)) 
     {
         fprintf(stderr, "Error: line %d The type of the operand does not match the type of the operation.\n", countLine);
         return 0;
     }
+    */
     strcpy(codeBin, miunOperand(operand1, 1)); /* Create code for operand1*/
     if (findExtern(operand1))
     {
@@ -1031,6 +1034,7 @@ int correctCommas(char *str)
 }
 
 /*Check if the instruction operand is correct */
+/*
 int instructionOperandIsCorrect(int numOper, const char *operand1, const char *operand2)
 {
     switch (numOper)
@@ -1060,13 +1064,13 @@ int instructionOperandIsCorrect(int numOper, const char *operand1, const char *o
     case 9:
     case 10:
     case 13:
-    { /*testing that nothing different from a label was received*/
+    { /*testing that nothing different from a label was received*//*
         if (operand1[0] == '#' || isRegister(operand1)+1)
             return 0;
         return 1;
     }
     case 4:
-    { /*testing that nothing different from a label was received*/
+    { /*testing that nothing different from a label was received*//*
         if (operand2[0] == '#' || operand1[0] == '#' || isRegister(operand1)+1)
         {
             return 0;
@@ -1076,7 +1080,7 @@ int instructionOperandIsCorrect(int numOper, const char *operand1, const char *o
     default:
         return 1;
     }
-}
+} */
 
 /* The function frees the defined memory */
 void freeMemory()
