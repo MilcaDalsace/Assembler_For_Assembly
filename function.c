@@ -65,7 +65,7 @@ int addData(const char *line, int countLine, const char *newSymbolName)
                 fprintf(stderr, "Error: line %d %s not a number \n", countLine,token);
                 return 0;
             }
-            token = strtok(NULL, " \t\n");
+            token = strtok(NULL, ", \t\n");
         }
     }
     else
