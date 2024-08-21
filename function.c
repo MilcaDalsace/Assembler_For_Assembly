@@ -42,40 +42,42 @@ int addData(const char *line, int countLine, const char *newSymbolName)
     char codeBin[CODE_SEGMENT_SIZE];
     char *lineCopy;
 
-    if (!line)
+    if (line)
     {
-        fprintf(stderr, "Error: line %d Num is missing\n", countLine);
+        lineCopy = strdup(line);
     }
     else
     {
-        lineCopy = strdup(line);
-        if (lineCopy != NULL && correctCommas(lineCopy))
+        lineCopy = NULL;
+    }
+
+    if (lineCopy != NULL && correctCommas(lineCopy))
+    {
+        char *token = strtok(lineCopy, ", \t\n");
+        while (token != NULL)
         {
-            char *token = strtok(lineCopy, ", \t\n");
-            while (token != NULL)
+            if (token && isNumber(token))
             {
-                if (token && isNumber(token))
-                {
-                    int value = atoi(token);
-                    strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1));
-                    addSymbol(newSymbolName, NULL, codeBin, 1, 0, 0); /* Add the data word*/
-                    newSymbolName = NULL;
-                    countWord++; /* add 1 L*/
-                }
-                else
-                {
-                    fprintf(stderr, "Error: line %d %s not a number \n", countLine, token);
-                    return 0;
-                }
-                token = strtok(NULL, ", \t\n");
+                int value = atoi(token);
+                strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1));
+                addSymbol(newSymbolName, NULL, codeBin, 1, 0, 0); /* Add the data word*/
+                newSymbolName = NULL;
+                countWord++; /* add 1 L*/
             }
-        }
-        else
-        {
-            fprintf(stderr, "Error: line %d Incorrect signs\n", countLine);
-            return 0;
+            else
+            {
+                fprintf(stderr, "Error: line %d %s not a number \n", countLine, token);
+                return 0;
+            }
+            token = strtok(NULL, ", \t\n");
         }
     }
+    else
+    {
+        fprintf(stderr, "line %d \n", countLine);
+        return 0;
+    }
+
     DC += countWord;
     addL(countLine, countWord);
     return 1;
@@ -276,7 +278,7 @@ int addOperation(const char *line, int numOper, int countLine, const char *newSy
     }
     else
     {
-        fprintf(stderr, "Error: line %d Incorrect signs\n", countLine);
+        fprintf(stderr, "line %d.\n", countLine);
         free(lineCopy);
         return 0;
     }
@@ -1013,7 +1015,6 @@ int correctCommas(char *str)
         if (*str == ',' && expecting_object)
         {
             /* Encountered a comma before finding an object, which is an error */
-            fprintf(stderr, "Error: Memory allocation failed.\n");
             return 0;
         }
         else if (*str == ',' && !expecting_object)
@@ -1039,30 +1040,18 @@ int correctCommas(char *str)
 /* The function frees the defined memory */
 void freeMemory()
 {
-    int i;
-
     /* Free memory for macros */
-    for (i = 0; i < macroCount; i++)
-    {
-        free(macros[i].name);
-        free(macros[i].content);
-    }
     free(macros);
 
     /* Free allocated memory for symbols */
-    for (i = 0; i < symbolCount; i++)
-    {
-        free(symbolTable[i].name);
-    }
     free(symbolTable);
 
     /* Free allocated memory for externs */
-    for (i = 0; i < externCount; i++)
-    {
-        free(externs[i].name);
-    }
     free(externs);
 
     /* Free allocated memory for symbols (assuming symbols is a pointer to a data structure) */
     free(symbols);
+
+    /* Free allocated memory for the number lines counter each symbole take */
+    free(l);
 }
