@@ -36,52 +36,52 @@ int DC = 0;
 
 /* Adds data to the symbol table.
    Returns 1 if the data is successfully added, 0 otherwise. */
+
 int addData(const char *line, int countLine, const char *newSymbolName)
+
 {
     int countWord = 0;
     char codeBin[CODE_SEGMENT_SIZE];
     char *lineCopy;
-
-    if (line)
+    if (!line)
+    {
+        fprintf(stderr, "Error: line %d Num is missing\n", countLine);
+    }
+    else
     {
         lineCopy = strdup(line);
-    }
-    else
-    {
-        lineCopy = NULL;
-    }
-
-    if (lineCopy != NULL && correctCommas(lineCopy))
-    {
-        char *token = strtok(lineCopy, ", \t\n");
-        while (token != NULL)
+        if (lineCopy != NULL && correctCommas(lineCopy))
         {
-            if (token && isNumber(token))
+            char *token = strtok(lineCopy, ", \t\n");
+            while (token != NULL)
             {
-                int value = atoi(token);
-                strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1));
-                addSymbol(newSymbolName, NULL, codeBin, 1, 0, 0); /* Add the data word*/
-                newSymbolName = NULL;
-                countWord++; /* add 1 L*/
+                if (token && isNumber(token))
+                {
+                    int value = atoi(token);
+                    strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1));
+                    addSymbol(newSymbolName, NULL, codeBin, 1, 0, 0); /* Add the data word*/
+                    newSymbolName = NULL;
+                    countWord++; /* add 1 L*/
+                }
+                else
+                {
+                    fprintf(stderr, "Error: line %d %s not a number \n", countLine, token);
+                    return 0;
+                }
+                token = strtok(NULL, ", \t\n");
             }
-            else
-            {
-                fprintf(stderr, "Error: line %d %s not a number \n", countLine, token);
-                return 0;
-            }
-            token = strtok(NULL, ", \t\n");
+        }
+        else
+        {
+            fprintf(stderr, "Error: line %d Incorrect signs\n", countLine);
+            return 0;
         }
     }
-    else
-    {
-        fprintf(stderr, "line %d \n", countLine);
-        return 0;
-    }
-
     DC += countWord;
     addL(countLine, countWord);
     return 1;
 }
+
 
 /* Adds a string to the symbol table.
 
