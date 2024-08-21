@@ -66,7 +66,7 @@ int addData(const char *line, int countLine, const char *newSymbolName) {
             token = strtok(NULL, ", \t\n");
         }
     } else {
-        fprintf(stderr, "line %d \n", countLine);
+        fprintf(stderr, "Incorrect signs or empty line %d \n", countLine);
         return 0;
     }
 
@@ -952,6 +952,7 @@ int correctCommas(char *str)
         if (*str == ',' && expecting_object)
         {
             /* Encountered a comma before finding an object, which is an error */
+                    fprintf(stderr, "Error: Memory allocation failed.\n");
             return 0;
         }
         else if (*str == ',' && !expecting_object)
