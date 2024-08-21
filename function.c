@@ -100,7 +100,6 @@ int addString(const char *line, int countLine, const char *newSymbolName)
     else
     {
         int length = strlen(token);
-        fprintf(stderr, " line: %d %d length.\n", countLine, length);
         char charToAdd = token[1];
         int value = charToAdd;                                          /* ASCII value*/
         strcpy(codeBin, decimalToBinary(value, CODE_SEGMENT_SIZE - 1)); /* Create binary code*/
@@ -189,11 +188,7 @@ int entryDefinition(const char *line, int countLine, int isFirstPass)
                 sym->isEntry = 1;
             }
         }
-        else if (isFirstPass)
-        {
-            fprintf(stderr, " line: %d %s not yet found in labbels.\n", countLine, token);
-        }
-        else
+        else if (isFirstPass==0)
         {
             fprintf(stderr, "Error: line %d label not exist.\n", countLine);
             return 0;

@@ -40,10 +40,12 @@ void firstPass(const char *sourceFilename)
                 else
                 {                                                                                /* A new correct label*/
                     token = strtok(NULL, " \t\n");                                               /* Next field*/
-                    fprintf(stderr, "line: %d %s naw symbol name.\n", countLine, newSymbolName); /* check*/
                 }
             }
-            if (token)
+            if(!token&&newSymbolName){
+                fprintf(stderr, "Error: line %d %s  is empty label.\n", countLine, newSymbolName);
+            }
+            else if (token)
             {
                 /* Data*/
                 if (strcmp(token, ".data") == 0)
@@ -97,11 +99,10 @@ void firstPass(const char *sourceFilename)
             /* Uncorrect introduction*/
             else if (strcmp(token, ";"))
             {
-                fprintf(stderr, "Error: line %d introduction? name incorrect.\n", countLine);
+                fprintf(stderr, "Error: line %d introduction name incorrect.\n", countLine);
                 uncorrect = 1;
             }
         }
-        fprintf(stderr, "line %d count word %d.\n", countLine, l[countLine - 1].wordCounter);
         free(newSymbolName);
         newSymbolName = NULL;
     }
@@ -116,7 +117,6 @@ void firstPass(const char *sourceFilename)
 /* Second pass*/
 void secondPass(const char *sourceFilename)
 {
-    fprintf(stderr, "second pass.\n"); /* check*/
     FILE *sourceFile = fopen(sourceFilename, "r");
     if (!sourceFile)
     {
@@ -186,7 +186,6 @@ void secondPass(const char *sourceFilename)
 void buildOutputFiles(const char *sourceFilename)
 {
 
-    fprintf(stderr, "build out put files.\n"); /* check*/
     FILE *sourceFile = fopen(sourceFilename, "r");
     if (!sourceFile)
     {
@@ -237,7 +236,6 @@ void buildOutputFiles(const char *sourceFilename)
         Symbol *sym = &symbols[i];
         int codeInDecimal = binaryToDecimal(sym->code);
         fprintf(obFile, "%04d \t %05o \n", sym->address, codeInDecimal);
-       /* fprintf(obFile, "%s\n", sym->code); check the  binary code*/
         if (sym->isExtern)
         {
             externExist = 1;
@@ -257,7 +255,7 @@ void buildOutputFiles(const char *sourceFilename)
             fflush(entFile);
         }
     }
-
+    fprintf(stderr, "The files were created successfully.\n");
     fclose(extFile);
     fclose(entFile);
     fclose(obFile);
