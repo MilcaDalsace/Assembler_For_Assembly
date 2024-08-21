@@ -166,7 +166,7 @@ int externDefinition(const char *line, int countLine)
         {
             if (isNameRestricted(token))
             {
-                fprintf(stderr, "Error: line %d is restricted name\n", countLine);
+                fprintf(stderr, "Error: line %d: %s is restricted name.\n", countLine,token);
                 return 0;
             }
             else
