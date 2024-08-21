@@ -74,7 +74,7 @@ void firstPass(const char *sourceFilename)
                 { /* External directive*/
                     char *remaining = strtok(NULL, "");
                     if (!remaining){
-                        uncorrect = 1;
+                    fprintf(stderr, "Error line %d: Extern is missing.\n", countLine);
                     }
                     else if(externDefinition(remaining, countLine) == 0)
                     {
@@ -85,6 +85,9 @@ void firstPass(const char *sourceFilename)
                 else if (strcmp(token, ".entry") == 0)
                 { /* Entry directive*/
                     char *remaining = strtok(NULL, "");
+                    if(!remaining){
+                        fprintf(stderr, "Error line %d: Entry is missing.\n", countLine);
+                    }
                     if (entryDefinition(remaining, countLine, 1) == 0)
                     {
                         uncorrect = 1;
