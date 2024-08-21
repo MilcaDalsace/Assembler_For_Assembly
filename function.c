@@ -150,11 +150,6 @@ int externDefinition(const char *line, int countLine)
     char *lineCopy;
     if (!line)
     {
-        fprintf(stderr, "Error line %d: extern is missing\n", countLine);
-        return 0;
-    }
-    else
-    {
         lineCopy = strdup(line);
         if (remaining && correctCommas(remaining))
         {
@@ -190,11 +185,6 @@ int entryDefinition(const char *line, int countLine, int isFirstPass)
     char *lineCopy;
     if (!line)
     {
-        fprintf(stderr, "Error line %d: extern is missing\n", countLine);
-        return 0;
-    }
-    else
-    {
         lineCopy = strdup(line);
         char *token = strtok(lineCopy, " \t\n");
         if (token)
@@ -220,11 +210,6 @@ int entryDefinition(const char *line, int countLine, int isFirstPass)
                 return 0;
             }
         }
-        else
-        {
-            fprintf(stderr, "Error line %d: Label name is missing.\n", countLine);
-            return 0;
-        }
         token = strtok(NULL, " \t\n");
         if (token)
         {
@@ -232,7 +217,6 @@ int entryDefinition(const char *line, int countLine, int isFirstPass)
             return 0;
         }
     }
-
     return 1;
 }
 

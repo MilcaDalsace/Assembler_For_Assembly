@@ -30,7 +30,7 @@ void firstPass(const char *sourceFilename)
         countLine++;
         strcpy(lineToCheck, line);
         char *token = strtok(lineToCheck, " \t\n");
-        if (token&&(token[0]!= ';'))/* No comment*/
+        if (token && (token[0] != ';')) /* No comment*/
         {
             newSymbolName = labelDefinition(token); /* Check for label definition*/
 
@@ -73,10 +73,11 @@ void firstPass(const char *sourceFilename)
                 else if (strcmp(token, ".extern") == 0)
                 { /* External directive*/
                     char *remaining = strtok(NULL, "");
-                    if (!remaining){
-                    fprintf(stderr, "Error line %d: Extern is missing.\n", countLine);
+                    if (!remaining)
+                    {
+                        fprintf(stderr, "Error line %d: Extern is missing.\n", countLine);
                     }
-                    else if(externDefinition(remaining, countLine) == 0)
+                    else if (externDefinition(remaining, countLine) == 0)
                     {
                         uncorrect = 1;
                     }
@@ -85,10 +86,11 @@ void firstPass(const char *sourceFilename)
                 else if (strcmp(token, ".entry") == 0)
                 { /* Entry directive*/
                     char *remaining = strtok(NULL, "");
-                    if(!remaining){
+                    if (!remaining)
+                    {
                         fprintf(stderr, "Error line %d: Entry is missing.\n", countLine);
                     }
-                    if (entryDefinition(remaining, countLine, 1) == 0)
+                    else if (entryDefinition(remaining, countLine, 1) == 0)
                     {
                         uncorrect = 1;
                     }
@@ -165,7 +167,7 @@ void secondPass(const char *sourceFilename)
         if (token)
         {
             /* Check if the line is a directive or comment*/
-            if ((token[0]== ';')|| (strcmp(token, ".data") == 0) || (strcmp(token, ".string") == 0) || (strcmp(token, ".extern") == 0))
+            if ((token[0] == ';') || (strcmp(token, ".data") == 0) || (strcmp(token, ".string") == 0) || (strcmp(token, ".extern") == 0))
             {
                 continue;
             }
