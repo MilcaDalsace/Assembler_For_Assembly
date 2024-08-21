@@ -35,7 +35,6 @@ int IC = 0;
 int DC = 0;
 
 /* Adds data to the symbol table.
-
    Returns 1 if the data is successfully added, 0 otherwise. */
 int addData(const char *line, int countLine, const char *newSymbolName)
 {
